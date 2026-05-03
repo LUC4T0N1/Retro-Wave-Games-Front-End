@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import HomeButton from '../../ui/HomeButton';
+import RetroGrid from '../../ui/RetroGrid';
 import isMobile from '../../../utils/isMobile';
 
 const COLS = 21;
@@ -458,16 +459,10 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
   const resultText  = result === 'win' ? 'YOU WIN!' : result === 'lose' ? 'YOU LOSE' : result === 'tie' ? 'TIE!' : 'OPPONENT LEFT';
 
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', background: '#020010', position: 'relative' }}>
-      <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
+    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', background: '#000', position: 'relative' }}>
+      <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
+      <canvas ref={canvasRef} style={{ position: 'relative', zIndex: 10, display: 'block', width: '100%', height: '100%' }} />
       <HomeButton />
-
-      {/* Decorative background grid and gradient */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3,
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.055) 50%, transparent 50%)',
-        backgroundSize: '100% 4px',
-      }} />
 
       {result && (
         <div style={{

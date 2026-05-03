@@ -2,11 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Patterns } from '../../utils/EndGame';
-import MeshBackground from '../ui/MeshBackground';
-import WaveAnimation from '../ui/WaveAnimation';
-import RetrowaveMountains from '../ui/RetrowaveMountains';
 import isMobile from '../../utils/isMobile';
 import HomeButton from '../ui/HomeButton';
+import RetroGrid from '../ui/RetroGrid';
 import './SinglePlayerScreen.css';
 
 /* ── SVG X mark ── */
@@ -234,27 +232,8 @@ function SinglePlayerScreen({ result, chooseSquare, handleRestart, board }) {
   };
 
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative', background: '#050010' }}>
-
-      {/* MeshBackground */}
-      <MeshBackground zIndex={0} />
-
-      {/* WaveAnimation */}
-      {!isMobile && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 1, opacity: 0.35, pointerEvents: 'none' }}>
-          <WaveAnimation particleColor="#ffffff" waveSpeed={1.5} waveIntensity={12} pointSize={1.5} gridDistance={5} />
-        </div>
-      )}
-
-      {/* Retrowave mountains — fades in on game over */}
-      {!isMobile && <RetrowaveMountains opacity={gameOver ? 1 : 0} zIndex={2} />}
-
-      {/* Scanlines */}
-      <div style={{
-        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 80,
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.055) 50%, transparent 50%)',
-        backgroundSize: '100% 4px',
-      }} />
+    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative', background: '#000' }}>
+      <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
 
       {/* Content */}
       <div style={{

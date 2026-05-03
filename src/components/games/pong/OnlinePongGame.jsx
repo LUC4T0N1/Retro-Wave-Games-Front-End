@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import isMobile from '../../../utils/isMobile';
 import HomeButton from '../../ui/HomeButton';
+import RetroGrid from '../../ui/RetroGrid';
 
 const LW = 800, LH = 480;
 const BALL_R = 8;
@@ -518,8 +519,6 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
 
     function draw(s, oppLeft) {
       ctx.clearRect(0, 0, LW, LH);
-      drawBg(s.tick);
-      drawGrid();
       drawCenterLine();
       drawPaddle(PAD_MARGIN, s.pY, '#00e5ff');
       // Host: render guest paddle at the smoothed visual position (not raw physics value)
@@ -531,7 +530,6 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
       if (s.phase === 'countdown') drawCountdown(s.cdown);
       if (s.phase === 'gameover' && !oppLeft) drawGameOver(s.winner, wonMsg, lostMsg);
       if (oppLeft) drawOppLeft();
-      drawScanlines();
     }
 
     function tick(ts) {
@@ -554,15 +552,11 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: '#020010',
+      position: 'fixed', inset: 0, background: '#000',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
     }}>
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3,
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.055) 50%, transparent 50%)',
-        backgroundSize: '100% 4px',
-      }} />
+      <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
 
       <HomeButton />
 

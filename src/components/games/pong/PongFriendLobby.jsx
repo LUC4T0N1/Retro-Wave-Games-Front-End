@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import OnlinePongGame from './OnlinePongGame';
 import HomeButton from '../../ui/HomeButton';
+import RetroGrid from '../../ui/RetroGrid';
 
 function PongFriendLobby({ socket }) {
   const [phase, setPhase]       = useState('form'); // 'form' | 'waiting' | 'game'
@@ -41,15 +42,10 @@ function PongFriendLobby({ socket }) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: '#020010',
+      position: 'fixed', inset: 0, background: '#000',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
-      {/* scanlines */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3,
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.055) 50%, transparent 50%)',
-        backgroundSize: '100% 4px',
-      }} />
+      <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
 
       <HomeButton />
 

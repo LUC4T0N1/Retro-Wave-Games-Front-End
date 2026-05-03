@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import MeshBackground from '../../ui/MeshBackground';
-import WaveAnimation from '../../ui/WaveAnimation';
 import Leaderboard from '../../ui/Leaderboard'; // Importado
 import isMobile from '../../../utils/isMobile';
 import HomeButton from '../../ui/HomeButton';
+import RetroGrid from '../../ui/RetroGrid';
 
 const BASE_W = 480;
 const BASE_H = 560;
@@ -438,9 +437,8 @@ export default function BreakoutGame() {
   const hearts = Array.from({ length: LIVES_START }, (_, i) => i < s.lives ? '♥' : '♡');
 
   return (
-    <div style={{ width: '100vw', minHeight: '100vh', background: '#050010', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', overflow: 'hidden', position: 'relative' }}>
-      <MeshBackground />
-      {!isMobile && <WaveAnimation />}
+    <div style={{ width: '100vw', minHeight: '100vh', background: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', overflow: 'hidden', position: 'relative' }}>
+      <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
 
       <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px 0', boxSizing: 'border-box', position: 'relative', zIndex: 10 }}>
         <HomeButton />

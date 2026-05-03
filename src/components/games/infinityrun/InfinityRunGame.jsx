@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Leaderboard from '../../ui/Leaderboard';
 import isMobile from '../../../utils/isMobile';
 import HomeButton from '../../ui/HomeButton';
+import RetroGrid from '../../ui/RetroGrid';
 
 // ── Constants ─────────────────────────────────────────────────────────────
 const LW = 800, LH = 270;
@@ -553,11 +554,8 @@ function InfinityRunGame() {
     // ── Draw ──────────────────────────────────────────────────────────────
     function draw(s) {
       ctx.clearRect(0, 0, LW, LH);
-      drawBg(s.tick);
-      drawGround(s.dist);
       s.obstacles.forEach(o => drawObstacle(o, s.tick));
       drawMonkey(s.monkey);
-      drawScanlines();
       if (s.status === 'dead') {
         ctx.save(); ctx.globalAlpha = 0.22; ctx.fillStyle = '#ff0044';
         ctx.fillRect(0, 0, LW, LH); ctx.restore();
@@ -585,9 +583,8 @@ function InfinityRunGame() {
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#030010', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,12,0.28)', zIndex: 2 }} />
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3, backgroundImage: 'linear-gradient(rgba(0,0,0,0.055) 50%, transparent 50%)', backgroundSize: '100% 4px' }} />
+    <div style={{ position: 'fixed', inset: 0, background: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
 
       <HomeButton />
 

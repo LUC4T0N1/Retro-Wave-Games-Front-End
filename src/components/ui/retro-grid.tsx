@@ -1,12 +1,19 @@
-import { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useMemo } from "react";
 
-function RetroGrid({
+interface RetroGridProps {
+  showScanlines?: boolean;
+  glowEffect?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+const RetroGrid: React.FC<RetroGridProps> = ({
   showScanlines = true,
   glowEffect = true,
   className = "",
   style,
-}) {
-  const canvasRef = useRef(null);
+}) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Palette from home screen
   const palette = useMemo(() => [
@@ -32,22 +39,22 @@ function RetroGrid({
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    const hexToRgb = (hex) => {
+    const hexToRgb = (hex: string) => {
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
       return result
         ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) }
         : { r: 255, g: 0, b: 255 };
     };
 
-    const lerp = (a, b, t) => a + (b - a) * t;
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
     
-    const lerpColor = (c1, c2, t) => ({
+    const lerpColor = (c1: {r:number, g:number, b:number}, c2: {r:number, g:number, b:number}, t: number) => ({
       r: Math.round(lerp(c1.r, c2.r, t)),
       g: Math.round(lerp(c1.g, c2.g, t)),
       b: Math.round(lerp(c1.b, c2.b, t)),
     });
 
-    const rgbToHex = ({ r, g, b }) => 
+    const rgbToHex = ({ r, g, b }: {r:number, g:number, b:number}) => 
       `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 
     const cellWidth = 120;
@@ -61,14 +68,14 @@ function RetroGrid({
 
     let offset = 0;
     const speed = 1.5;
-    let animationId;
+    let animationId: number;
 
     // Color cycling state
     let colorIndex = 0;
     let colorT = 0;
     const colorSpeed = 0.002; // Slower transitions
 
-    const project3DTo2D = (x, y, z) => {
+    const project3DTo2D = (x: number, y: number, z: number) => {
       const relX = x - cameraX;
       const relY = y - cameraY;
       const relZ = z - cameraZ;
@@ -82,7 +89,7 @@ function RetroGrid({
       };
     };
 
-    const drawCell = (x, z, zOffset, gridColor) => {
+    const drawCell = (x: number, z: number, zOffset: number, gridColor: string) => {
       const actualZ = z - zOffset;
       if (actualZ < -cellDepth || actualZ > numCellsDeep * cellDepth) return;
 
@@ -141,9 +148,9 @@ function RetroGrid({
       const currentRgb = lerpColor(c1, c2, colorT);
       const gridColor = rgbToHex(currentRgb);
 
-      const r = (f) => Math.round(currentRgb.r * f);
-      const g = (f) => Math.round(currentRgb.g * f);
-      const b = (f) => Math.round(currentRgb.b * f);
+      const r = (f: number) => Math.round(currentRgb.r * f);
+      const g = (f: number) => Math.round(currentRgb.g * f);
+      const b = (f: number) => Math.round(currentRgb.b * f);
 
       const sky = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.55);
       sky.addColorStop(0,    `rgba(${r(0.05)}, ${g(0.05)}, ${b(0.15)}, 1)`);

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import HomeButton from '../../ui/HomeButton';
+import RetroGrid from '../../ui/RetroGrid';
 import isMobile from '../../../utils/isMobile';
 
 const COLS = 21;
@@ -631,7 +632,8 @@ function OnlinePacmanGame({ socket, room, opponentName }) {
   const resultColor = result === 'win' ? '#00ffcc' : result === 'tie' ? '#ffe066' : result === 'lose' ? '#ff2d78' : '#ff8c00';
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#050010', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+    <div style={{ position: 'fixed', inset: 0, background: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
       {/* scanlines */}
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3, backgroundImage: 'linear-gradient(rgba(0,0,0,0.055) 50%, transparent 50%)', backgroundSize: '100% 4px' }} />
 

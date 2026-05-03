@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import HomeButton from '../../ui/HomeButton';
+import RetroGrid from '../../ui/RetroGrid';
 
 const COLS = 10;
 const ROWS = 20;
@@ -177,16 +178,8 @@ export default function OnlineTetrisGame({ socket, room, opponentName }) {
     const oppBoardX = sx + leftW + gap;
     const oppStX    = oppBoardX + boardW;
 
-    // Background
     ctx.clearRect(0, 0, W, H);
-    const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, '#040010');
-    bg.addColorStop(0.3, '#0e0030');
-    bg.addColorStop(0.6, '#180040');
-    bg.addColorStop(1, '#080018');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, W, H);
-
+    ctx.save();
     const s   = myStateRef.current;
     const opp = oppStateRef.current;
     if (!s) return;
@@ -680,8 +673,9 @@ export default function OnlineTetrisGame({ socket, room, opponentName }) {
   const resultText  = result === 'win' ? 'YOU WIN!' : result === 'lose' ? 'YOU LOSE' : result === 'tie' ? 'TIE!' : 'OPPONENT LEFT';
 
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', background: '#040010', position: 'relative' }}>
-      <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
+    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', background: '#000', position: 'relative' }}>
+      <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
+      <canvas ref={canvasRef} style={{ position: 'relative', zIndex: 10, display: 'block', width: '100%', height: '100%' }} />
       <HomeButton />
 
       {result && (

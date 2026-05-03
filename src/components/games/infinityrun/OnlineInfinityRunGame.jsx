@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HomeButton from '../../ui/HomeButton';
+import RetroGrid from '../../ui/RetroGrid';
 
 // ── Constants ─────────────────────────────────────────────────────────────
 const LW = 800, LH = 270;
@@ -503,8 +504,6 @@ function OnlineInfinityRunGame({ socket, room, opponentName, myName = 'YOU' }) {
     function draw(s) {
       const opp = oppRef.current;
       ctx.clearRect(0, 0, LW, TOTAL_H);
-      drawBg(s.tick, 0);
-      drawGround(s.dist, 0);
       s.obstacles.forEach(o => drawObstacle(o, s.tick, 0));
       drawMonkey(s.monkey, 0);
       drawLabel(myName, s.score, s.speed, 0);
@@ -514,8 +513,6 @@ function OnlineInfinityRunGame({ socket, room, opponentName, myName = 'YOU' }) {
         ctx.fillText('DIED - SPECTATING', LW / 2, LH / 2); ctx.restore();
       }
       drawSeparator();
-      drawBg(s.tick, OPP_Y);
-      drawGround(opp.dist || 0, OPP_Y);
       (opp.obstacles || []).forEach(o => drawObstacle(o, s.tick, OPP_Y));
       drawOppMonkey(opp.monkeyY ?? GROUND_Y - MONKEY_H, opp.ducking, OPP_Y);
       drawLabel(opponentName, opp.score || 0, opp.speed || INIT_SPEED, OPP_Y);
@@ -524,7 +521,6 @@ function OnlineInfinityRunGame({ socket, room, opponentName, myName = 'YOU' }) {
         ctx.globalAlpha = 1.0; ctx.fillStyle = '#ff2d78'; ctx.font = "bold 24px Orbitron, sans-serif"; ctx.textAlign = 'center';
         ctx.fillText('OPPONENT DIED', LW / 2, OPP_Y + LH / 2); ctx.restore();
       }
-      drawScanlines();
     }
 
     // ── tick ───────────────────────────────────────────────────────────
@@ -576,8 +572,8 @@ function OnlineInfinityRunGame({ socket, room, opponentName, myName = 'YOU' }) {
   const isTie = result === 'tie';
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#030010', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3, backgroundImage: 'linear-gradient(rgba(0,0,0,0.055) 50%, transparent 50%)', backgroundSize: '100% 4px' }} />
+    <div style={{ position: 'fixed', inset: 0, background: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
 
       <div style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <canvas ref={canvasRef} width={LW} height={TOTAL_H} style={{ display: 'block', border: '2px solid rgba(0,180,255,0.4)', borderRadius: 4, boxShadow: '0 0 32px rgba(0,100,255,0.28), inset 0 0 24px rgba(0,0,40,0.85)' }} />

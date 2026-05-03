@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import MeshBackground from '../../ui/MeshBackground';
-import WaveAnimation from '../../ui/WaveAnimation';
 import Leaderboard from '../../ui/Leaderboard';
 import isMobile from '../../../utils/isMobile';
 import HomeButton from '../../ui/HomeButton';
+import RetroGrid from '../../ui/RetroGrid';
 
 const COLS = 21;
 const ROWS = 22;
@@ -524,21 +523,12 @@ function PacmanGame() {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: '#050010',
+      position: 'fixed', inset: 0, background: '#000',
       display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
     }}>
-      <MeshBackground zIndex={0} />
-      {!isMobile && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 1, opacity: 0.35, pointerEvents: 'none' }}>
-          <WaveAnimation particleColor="#ffffff" waveSpeed={1.5} waveIntensity={12} pointSize={1.5} gridDistance={5} />
-        </div>
-      )}
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,12,0.38)', zIndex: 2 }} />
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3,
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.055) 50%, transparent 50%)',
-        backgroundSize: '100% 4px',
-      }} />
+      <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
+      {/* scanlines overlay (optional as RetroGrid has them, but keeping for consistency if needed or removing if redundant) */}
+      {/* Removing redundant overlays and scanlines as RetroGrid handles it */}
       <HomeButton />
 
       <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
