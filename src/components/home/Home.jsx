@@ -55,6 +55,11 @@ function Home({ socket }) {
 
   useEffect(() => {
     socket.emit("leave-room");
+    // Wake up backend on Render (free tier)
+    const serverUrl = process.env.REACT_APP_SERVER_URL;
+    if (serverUrl) {
+      fetch(serverUrl).catch(() => {}); // Simple ping to wake up the server
+    }
   }, [location, socket]);
 
   useEffect(() => {
