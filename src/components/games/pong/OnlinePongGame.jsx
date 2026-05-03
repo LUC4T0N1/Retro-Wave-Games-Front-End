@@ -63,11 +63,9 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
   const oppLeftRef        = useRef(false);
 
   // Network sync refs
-  const remoteBallRef     = useRef(null);          // guest: {x,y,vx,vy,spd,hits,ts}
-  const remoteOppPadRef   = useRef(null);          // both: latest received opponent Y
-  const oppPadVisualRef   = useRef((LH - PAD_H) / 2); // host: smoothed guest paddle
-  // Guest-side collision authority
-  const guestHitSentRef   = useRef(false);         // prevent double-emit per approach
+  const remoteBallRef     = useRef(null);          // Latest received authoritative ball
+  const remoteOppPadRef   = useRef(null);          // Latest received opponent Y
+  const oppPadVisualRef   = useRef((LH - PAD_H) / 2); // Smoothed visual opponent paddle
 
   const scale = isMobile
     ? Math.min((window.innerWidth * 0.98) / LW, (window.innerHeight * 0.78) / LH)
@@ -140,24 +138,22 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
   useEffect(() => {
     const onPaddle = ({ y }) => { remoteOppPadRef.current = y; };
 
-    // Guest receives ball state from host (with spd/hits for consistent bounces)
+    // Receive ball state from the current authority
     const onBall = ({ x, y, vx, vy, spd, hits }) => {
-      if (!isHost && guestHitSentRef.current && vx > 0) return;
-      if (!isHost && vx < 0) guestHitSentRef.current = false;
-      remoteBallRef.current = { x, y, vx, vy, spd: spd ?? INIT_SPEED, hits: hits ?? 0, ts: performance.now() };
-    };
-
-    // Host receives collision report from guest — guest knows EXACTLY where its paddle is
-    const onHit = ({ x, y, vx, vy, spd, hits }) => {
       const s = stateRef.current;
-      if (!s || s.phase !== 'playing') return;
-      const b = s.ball;
-      // Accept hit if ball is on the right half of the screen (prevents very stale hits)
-      if (b.x < LW / 2) return;
+      if (!s) return;
+
+      // If I am current authority (ball coming to me), I ignore remote ball
+      // EXCEPT during countdown where Host is always authority
+      const isAuthority = s.phase === 'playing' && ((isHost && vx <= 0) || (!isHost && vx > 0));
+      if (isAuthority) return;
+
+      remoteBallRef.current = { x, y, vx, vy, spd: spd ?? INIT_SPEED, hits: hits ?? 0, ts: performance.now() };
       
-      b.x = x; b.y = y; b.vx = vx; b.vy = vy; b.spd = spd; b.hits = hits;
-      // Force-send the corrected state to guest immediately
-      socket.emit('pong-ball', { room, x: b.x, y: b.y, vx: b.vx, vy: b.vy, spd: b.spd, hits: b.hits });
+      // Force sync during countdown or if ball was just launched
+      if (s.phase === 'countdown' || !s.ball.vx) {
+        s.ball.x = x; s.ball.y = y; s.ball.vx = vx; s.ball.vy = vy; s.ball.spd = spd; s.ball.hits = hits;
+      }
     };
 
     const onPoint = ({ leftScore, rightScore }) => {
@@ -167,11 +163,10 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
       if      (leftScore  >= WIN_SCORE) { s.phase = 'gameover'; s.winner = 'player'; }
       else if (rightScore >= WIN_SCORE) { s.phase = 'gameover'; s.winner = 'ai'; }
       else {
-        const dir = rightScore > leftScore ? -1 : 1;
-        s.ball = newBall(dir);
-        remoteBallRef.current   = null;
-        guestHitSentRef.current = false;
+        // Prepare for next round — Host will decide initial direction
         s.phase = 'countdown'; s.cdown = COUNTDOWN_SEC;
+        s.ball = newBall(0); // Stop ball locally until Host syncs it
+        remoteBallRef.current = null;
       }
       setUi({ pScore: s.pScore, aScore: s.aScore, phase: s.phase, winner: s.winner, oppLeft: false });
     };
@@ -184,16 +179,11 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
     socket.on('pong-paddle', onPaddle);
     socket.on('pong-restart-ready', onRestartReady);
     socket.on('pong-opponent-left', onOppLeft);
-    if (isHost) {
-      socket.on('pong-hit', onHit);
-    } else {
-      socket.on('pong-ball',  onBall);
-      socket.on('pong-point', onPoint);
-    }
+    socket.on('pong-ball',  onBall);
+    socket.on('pong-point', onPoint);
 
     return () => {
       socket.off('pong-paddle', onPaddle);
-      socket.off('pong-hit',   onHit);
       socket.off('pong-ball',  onBall);
       socket.off('pong-point', onPoint);
       socket.off('pong-restart-ready', onRestartReady);
@@ -370,7 +360,7 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
       const dt_60 = dt * 60;
       s.tick++;
 
-      // ── Own paddle ──
+      // ── Own paddle movement ──
       const inp = inputRef.current;
       if (inp.touchY !== null) {
         s[myPaddle] = Math.max(0, Math.min(LH - PAD_H, inp.touchY - PAD_H / 2));
@@ -378,142 +368,95 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
         if (inp.up)   s[myPaddle] = Math.max(0,          s[myPaddle] - PLAYER_SPD * dt_60);
         if (inp.down) s[myPaddle] = Math.min(LH - PAD_H, s[myPaddle] + PLAYER_SPD * dt_60);
       }
-
-      // Emit own paddle every frame — low bandwidth (~30 bytes), minimises lag on opponent's screen
       socket.emit('pong-paddle', { room, y: s[myPaddle] });
 
       if (s.phase === 'gameover') return;
 
+      // ── Authority Determination ──
+      // Host handles countdown and ball moving left (towards them).
+      // Guest handles ball moving right (towards them).
+      const isAuthority = (isHost && s.ball.vx <= 0) || (!isHost && s.ball.vx > 0);
+
       if (s.phase === 'countdown') {
         s.cdown -= dt;
         if (s.cdown <= 0) s.phase = 'playing';
-        if (isHost) socket.emit('pong-ball', { room, x: s.ball.x, y: s.ball.y, vx: s.ball.vx, vy: s.ball.vy, spd: s.ball.spd, hits: s.ball.hits });
+        // Host initializes ball for everyone
+        if (isHost) {
+          if (!s.ball.vx) s.ball = newBall(Math.random() < 0.5 ? 1 : -1);
+          socket.emit('pong-ball', { room, ...s.ball });
+        }
         return;
       }
 
-      // ── Guest update ────────────────────────────────────────────────────────
-      if (!isHost) {
-        // Smooth opponent (host/left) paddle
-        if (remoteOppPadRef.current !== null)
-          s.pY = smoothPad(s.pY, remoteOppPadRef.current, dt);
-
-        // Advance local ball physics
-        const dt_60 = dt * 60;
+      // ── Physics ──
+      if (isAuthority) {
+        // Authoritative movement
         s.ball.x += s.ball.vx * dt_60;
         s.ball.y += s.ball.vy * dt_60;
-        if (s.ball.y - BALL_R < 0) { s.ball.y = BALL_R; s.ball.vy = Math.abs(s.ball.vy); }
-        if (s.ball.y + BALL_R > LH) { s.ball.y = LH - BALL_R; s.ball.vy = -Math.abs(s.ball.vy); }
 
-        // Soft correct towards remote ball
-        const rb = remoteBallRef.current;
-        if (rb) {
-          const age  = Math.min((performance.now() - rb.ts) * 0.001, 0.2);
-          let extX = rb.x + rb.vx * age * 60;
-          let extY = rb.y + rb.vy * age * 60;
-          // Approximate Y wall reflections
-          if (extY - BALL_R < 0)   { extY = BALL_R + -(extY - BALL_R); }
-          if (extY + BALL_R > LH)  { extY = LH - BALL_R - (extY + BALL_R - LH); }
-          
-          const dx = extX - s.ball.x;
-          const dy = extY - s.ball.y;
-          const distSq = dx * dx + dy * dy;
-          
-          if (distSq > 10000) {
-            s.ball.x = extX; s.ball.y = extY;
-          } else {
-            s.ball.x += dx * 0.15;
-            s.ball.y += dy * 0.15;
+        // Y Walls
+        if (s.ball.y - BALL_R <= 0)  { s.ball.y = BALL_R;      s.ball.vy =  Math.abs(s.ball.vy); }
+        if (s.ball.y + BALL_R >= LH) { s.ball.y = LH - BALL_R; s.ball.vy = -Math.abs(s.ball.vy); }
+
+        // Paddle Collision (only for own paddle)
+        if (isHost && s.ball.vx < 0) {
+          // Left paddle (Host)
+          if (s.ball.x - BALL_R <= P_RIGHT && s.ball.x + BALL_R >= P_RIGHT - PAD_W) {
+            if (s.ball.y >= s.pY - BALL_R && s.ball.y <= s.pY + PAD_H + BALL_R) {
+              s.ball.x = P_RIGHT + BALL_R + 1;
+              applyBounce(s.ball, s.pY, 1);
+            }
           }
-          // Blend velocity slightly to match host
-          s.ball.vx = s.ball.vx * 0.8 + rb.vx * 0.2;
-          s.ball.vy = s.ball.vy * 0.8 + rb.vy * 0.2;
-          s.ball.spd = rb.spd; 
-          s.ball.hits = rb.hits;
-        }
-
-        // ── Guest-authoritative collision on own (right) paddle ──────────────
-        // The guest knows exactly where its paddle is; the host doesn't due to lag.
-        // When the ball reaches the paddle face, tell the host.
-        const b = s.ball;
-        if (b.vx > 0) {
-          if (b.x + BALL_R >= A_LEFT && b.x - BALL_R <= A_LEFT + PAD_W && !guestHitSentRef.current) {
-            if (b.y >= s.aY - BALL_R && b.y <= s.aY + PAD_H + BALL_R) {
-              // HIT — report to host and apply locally
-              guestHitSentRef.current = true;
-              const hitY = Math.max(s.aY, Math.min(s.aY + PAD_H, b.y));
-              b.x = A_LEFT - BALL_R - 0.5;
-              b.y = hitY;
-              applyBounce(b, s.aY, -1);
-              socket.emit('pong-hit', { room, x: b.x, y: b.y, vx: b.vx, vy: b.vy, spd: b.spd, hits: b.hits });
-              // Overwrite the remote ref so dead-reckoning uses the new velocity
-              remoteBallRef.current = { x: b.x, y: b.y, vx: b.vx, vy: b.vy, spd: b.spd, hits: b.hits, ts: performance.now() };
+        } else if (!isHost && s.ball.vx > 0) {
+          // Right paddle (Guest)
+          if (s.ball.x + BALL_R >= A_LEFT && s.ball.x - BALL_R <= A_LEFT + PAD_W) {
+            if (s.ball.y >= s.aY - BALL_R && s.ball.y <= s.aY + PAD_H + BALL_R) {
+              s.ball.x = A_LEFT - BALL_R - 1;
+              applyBounce(s.ball, s.aY, -1);
             }
           }
         }
-        return;
-      }
 
-      // ── Host: authoritative ball physics ─────────────────────────────────────
-      // Snap physics paddle from latest received value (emit-every-frame means it's fresh)
-      if (remoteOppPadRef.current !== null) s.aY = remoteOppPadRef.current;
-      // Visual smoothing for rendering the guest paddle on host's screen
-      oppPadVisualRef.current = smoothPad(oppPadVisualRef.current, s.aY, dt);
+        // Scoring (only against self)
+        if (isHost && s.ball.x < -40) {
+          s.aScore++;
+          socket.emit('pong-point', { room, leftScore: s.pScore, rightScore: s.aScore });
+          onPoint({ leftScore: s.pScore, rightScore: s.aScore }); // Update locally
+        } else if (!isHost && s.ball.x > LW + 40) {
+          s.pScore++;
+          socket.emit('pong-point', { room, leftScore: s.pScore, rightScore: s.aScore });
+          onPoint({ leftScore: s.pScore, rightScore: s.aScore }); // Update locally
+        }
 
-      const b   = s.ball;
-      const dvx = b.vx * dt_60;
-      const dvy = b.vy * dt_60;
-
-      let newX = b.x + dvx;
-      let newY = b.y + dvy;
-
-      // Y walls
-      if (newY - BALL_R <= 0)  { newY = BALL_R;      b.vy =  Math.abs(b.vy); }
-      if (newY + BALL_R >= LH) { newY = LH - BALL_R; b.vy = -Math.abs(b.vy); }
-
-      // ── Collision — left paddle (host's own) ──────────────────────────
-      let collided = false;
-      if (b.vx < 0) {
-        const crossed = (b.x - BALL_R > P_RIGHT && newX - BALL_R <= P_RIGHT);
-        const overlapping = (newX - BALL_R <= P_RIGHT && newX + BALL_R >= P_RIGHT - PAD_W);
-        if (crossed || overlapping) {
-          let hitY = newY;
-          if (crossed && dvx < -0.001) hitY = b.y + dvy * ((P_RIGHT - (b.x - BALL_R)) / dvx);
-          if (hitY >= s.pY - BALL_R && hitY <= s.pY + PAD_H + BALL_R) {
-            newX = P_RIGHT + BALL_R + 0.5;
-            b.y = hitY;
-            applyBounce(b, s.pY, +1);
-            collided = true;
-          }
+        // Emit state
+        socket.emit('pong-ball', { room, ...s.ball });
+      } else {
+        // Non-authoritative: Smoothly track the remote ball
+        const rb = remoteBallRef.current;
+        if (rb) {
+          // Dead reckoning for the time since last packet
+          const age = (performance.now() - rb.ts) / 1000;
+          const extX = rb.x + rb.vx * (age * 60);
+          const extY = rb.y + rb.vy * (age * 60);
+          
+          // Soft correction (lerp)
+          s.ball.x += (extX - s.ball.x) * 0.25;
+          s.ball.y += (extY - s.ball.y) * 0.25;
+          s.ball.vx = rb.vx;
+          s.ball.vy = rb.vy;
+          s.ball.spd = rb.spd;
+          s.ball.hits = rb.hits;
+        } else {
+          // Fallback simple prediction if no packet yet
+          s.ball.x += s.ball.vx * dt_60;
+          s.ball.y += s.ball.vy * dt_60;
         }
       }
 
-      // ── We do NOT apply fallback collision for the right paddle here. ──
-      // The Guest is entirely authoritative over its own paddle (Red Player).
-      // The 'pong-hit' packet will overwrite the ball's trajectory if the Guest hit it.
-
-      b.x = newX;
-      b.y = newY;
-
-      // Emit ball every frame — guest extrapolates between packets anyway,
-      // but more frequent = less extrapolation error near bounces.
-      socket.emit('pong-ball', { room, x: b.x, y: b.y, vx: b.vx, vy: b.vy, spd: b.spd, hits: b.hits });
-
-      // ── Scoring (delayed boundaries to allow late 'pong-hit' packets) ──
-      if (b.x < -150) {
-        s.aScore++;
-        if (s.aScore >= WIN_SCORE) { s.phase = 'gameover'; s.winner = 'ai'; }
-        else { s.ball = newBall(-1); s.phase = 'countdown'; s.cdown = COUNTDOWN_SEC; }
-        socket.emit('pong-point', { room, leftScore: s.pScore, rightScore: s.aScore });
-        setUi({ pScore: s.pScore, aScore: s.aScore, phase: s.phase, winner: s.winner, oppLeft: false });
-        return;
-      }
-      if (b.x > LW + 150) {
-        s.pScore++;
-        if (s.pScore >= WIN_SCORE) { s.phase = 'gameover'; s.winner = 'player'; }
-        else { s.ball = newBall(1); s.phase = 'countdown'; s.cdown = COUNTDOWN_SEC; }
-        socket.emit('pong-point', { room, leftScore: s.pScore, rightScore: s.aScore });
-        setUi({ pScore: s.pScore, aScore: s.aScore, phase: s.phase, winner: s.winner, oppLeft: false });
-        return;
+      // Update opponent visual paddle
+      if (remoteOppPadRef.current !== null) {
+        if (isHost) oppPadVisualRef.current = smoothPad(oppPadVisualRef.current, remoteOppPadRef.current, dt);
+        else s.pY = smoothPad(s.pY, remoteOppPadRef.current, dt);
       }
     }
 
