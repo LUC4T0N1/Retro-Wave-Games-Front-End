@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import isMobile from '../../../utils/isMobile';
 import HomeButton from '../../ui/HomeButton';
 import RetroGrid from '../../ui/RetroGrid';
@@ -64,7 +64,7 @@ function PongGame() {
   const lastTRef  = useRef(0);
   const inputRef  = useRef({ up: false, down: false, up2: false, down2: false, touchY: null });
 
-  const [ui, setUi] = useState({ pScore: 0, aScore: 0, phase: 'countdown', winner: null });
+  const [, setUi] = useState({ pScore: 0, aScore: 0, phase: 'countdown', winner: null });
 
   const scale = isMobile
     ? Math.min((window.innerWidth * 0.98) / LW, (window.innerHeight * 0.78) / LH)
@@ -95,7 +95,7 @@ function PongGame() {
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup',   onUp);
     return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
-  }, [restart]);
+  }, [restart, isLocal]);
 
   // ── Touch ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -135,81 +135,6 @@ function PongGame() {
       ctx.arcTo(x, y + h, x, y, r);
       ctx.arcTo(x, y, x + w, y, r);
       ctx.closePath();
-    }
-
-    function drawBg(tick) {
-      const g = ctx.createLinearGradient(0, 0, 0, LH);
-      g.addColorStop(0,    '#020010');
-      g.addColorStop(0.35, '#0c002e');
-      g.addColorStop(0.65, '#320050');
-      g.addColorStop(1,    '#100022');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, LW, LH);
-
-      // Stars
-      const S = [11,37,71,113,157,199,241,293,337,401,457,509,563,617,673,743,811,877,941,1009];
-      S.forEach((s, i) => {
-        const x = (s * 53 + i * 180) % LW;
-        const y = (s * 19 + i * 42)  % (LH * 0.72);
-        const r = s % 3 === 0 ? 1.4 : 0.75;
-        ctx.save();
-        ctx.globalAlpha = 0.35 + 0.55 * Math.abs(Math.sin(tick * 0.012 + s * 0.3));
-        ctx.fillStyle = s % 7 === 0 ? '#e0c8ff' : '#fff';
-        if (s % 7 === 0) { ctx.shadowColor = '#e0c8ff'; ctx.shadowBlur = 5; }
-        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-        ctx.restore();
-      });
-
-      // Neon sun — centered, just above the grid horizon
-      const sx = LW / 2, sy = LH * 0.58, sr = 44;
-      const og = ctx.createRadialGradient(sx, sy, sr * 0.4, sx, sy, sr * 2.6);
-      og.addColorStop(0, 'rgba(255,60,0,0.40)');
-      og.addColorStop(0.38, 'rgba(180,0,80,0.16)');
-      og.addColorStop(1, 'transparent');
-      ctx.fillStyle = og;
-      ctx.fillRect(sx - sr * 2.8, sy - sr * 2.8, sr * 5.6, sr * 5.6);
-      ctx.save();
-      ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.clip();
-      const sg = ctx.createLinearGradient(sx, sy - sr, sx, sy + sr);
-      sg.addColorStop(0, '#ffee00'); sg.addColorStop(0.22, '#ff8800');
-      sg.addColorStop(0.55, '#ff1122'); sg.addColorStop(1, '#990044');
-      ctx.fillStyle = sg; ctx.fillRect(sx - sr, sy - sr, sr * 2, sr * 2);
-      for (let i = 0; i < 8; i++) {
-        const ly = sy + (i / 8) * sr * 0.92;
-        ctx.fillStyle = `rgba(4,0,10,${0.30 + i * 0.055})`;
-        ctx.fillRect(sx - sr, ly, sr * 2, 5 + i * 0.4);
-      }
-      ctx.restore();
-    }
-
-    function drawGrid() {
-      const gy = LH * 0.60;
-      ctx.save();
-      // Horizontal grid lines
-      for (let i = 0; i < 6; i++) {
-        const t = (i + 1) / 6;
-        const y = gy + (LH - gy) * t;
-        ctx.strokeStyle = `rgba(0,60,200,${0.10 + t * 0.35})`;
-        ctx.shadowColor = '#0044ff'; ctx.shadowBlur = t > 0.5 ? 4 : 0;
-        ctx.lineWidth = 0.5 + t * 0.9;
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(LW, y); ctx.stroke();
-      }
-      // Perspective verticals
-      const vp = LW / 2;
-      for (let i = 0; i <= 12; i++) {
-        const gx = (LW / 12) * i;
-        const hx = vp + (gx - vp) * 0.06;
-        ctx.strokeStyle = 'rgba(30,0,160,0.20)';
-        ctx.shadowBlur = 0; ctx.lineWidth = 0.4;
-        ctx.beginPath(); ctx.moveTo(hx, gy); ctx.lineTo(gx, LH); ctx.stroke();
-      }
-      // Horizon glow
-      const hg = ctx.createLinearGradient(0, gy - 10, 0, gy + 10);
-      hg.addColorStop(0, 'transparent');
-      hg.addColorStop(0.5, 'rgba(100,0,200,0.20)');
-      hg.addColorStop(1, 'transparent');
-      ctx.fillStyle = hg; ctx.fillRect(0, gy - 10, LW, 20);
-      ctx.restore();
     }
 
     function drawCenterLine() {
@@ -324,12 +249,6 @@ function PongGame() {
       ctx.font = "13px 'Orbitron', sans-serif";
       ctx.fillStyle = 'rgba(255,255,255,0.50)';
       ctx.fillText(isMobile ? 'TAP TO PLAY AGAIN' : 'PRESS SPACE TO PLAY AGAIN', LW / 2, LH / 2 + 28);
-      ctx.restore();
-    }
-
-    function drawScanlines() {
-      ctx.save(); ctx.globalAlpha = 0.04;
-      for (let y = 0; y < LH; y += 4) { ctx.fillStyle = '#000'; ctx.fillRect(0, y, LW, 2); }
       ctx.restore();
     }
 
