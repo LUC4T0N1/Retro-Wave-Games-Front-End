@@ -114,72 +114,46 @@ function Home({ socket }) {
       return rows;
     }
 
-    const TTT = {
-      phase: 'wait', phaseT: 0, x: 0, y: 0, cs: 0,
-      alpha: 0, marks: [], seq: [], markT: 0,
-      reset() {
-        this.cs = Math.min(W, H) * 0.040;
-        this.x = W * (0.12 + Math.random() * 0.76);
-        this.y = H * (0.05 + Math.random() * 0.28);
-        this.alpha = 0; this.phase = 'fadeIn'; this.phaseT = 0;
-        this.marks = []; this.markT = 0;
-        const games = [
-          [{ c: 4, m: 'X' }, { c: 0, m: 'O' }, { c: 8, m: 'X' }, { c: 2, m: 'O' }, { c: 6, m: 'X' }],
-          [{ c: 4, m: 'X' }, { c: 1, m: 'O' }, { c: 3, m: 'X' }, { c: 5, m: 'O' }, { c: 7, m: 'X' }, { c: 2, m: 'O' }],
-          [{ c: 0, m: 'X' }, { c: 4, m: 'O' }, { c: 2, m: 'X' }, { c: 1, m: 'O' }, { c: 6, m: 'X' }],
-          [{ c: 4, m: 'X' }, { c: 6, m: 'O' }, { c: 2, m: 'X' }, { c: 8, m: 'O' }, { c: 0, m: 'X' }],
-        ];
-        this.seq = games[Math.floor(Math.random() * games.length)];
-      },
-      update(dt) {
-        this.phaseT += dt;
-        const FADE = 0.55, MI = 0.78, HOLD = 1.5, WAIT = 2.0, MAX_A = 0.30;
-        if (this.phase === 'wait') {
-          if (this.phaseT > WAIT) this.reset();
-        } else if (this.phase === 'fadeIn') {
-          this.alpha = Math.min(MAX_A, (this.phaseT / FADE) * MAX_A);
-          if (this.phaseT > FADE) { this.phase = 'play'; this.phaseT = 0; }
-        } else if (this.phase === 'play') {
-          this.markT += dt;
-          const shown = Math.floor(this.markT / MI);
-          const frac = (this.markT % MI) / MI;
-          this.marks = this.seq.slice(0, Math.min(shown + 1, this.seq.length)).map((m, i) => ({
-            ...m, progress: i < shown ? 1 : Math.min(1, frac / 0.55)
-          }));
-          if (shown >= this.seq.length) { this.phase = 'hold'; this.phaseT = 0; }
-        } else if (this.phase === 'hold') {
-          if (this.phaseT > HOLD) { this.phase = 'fadeOut'; this.phaseT = 0; }
-        } else if (this.phase === 'fadeOut') {
-          this.alpha = Math.max(0, MAX_A * (1 - this.phaseT / FADE));
-          if (this.phaseT > FADE) { this.phase = 'wait'; this.phaseT = 0; }
+    const ShootingStars = {
+      stars: [],
+      nextSpawn: 0,
+      update(dt, now) {
+        if (now > this.nextSpawn) {
+          this.stars.push({
+            x: Math.random() * W,
+            y: Math.random() * H * 0.4,
+            vx: 300 + Math.random() * 500,
+            vy: 100 + Math.random() * 200,
+            len: 40 + Math.random() * 80,
+            alpha: 1,
+            life: 0.8 + Math.random() * 0.6,
+            age: 0
+          });
+          this.nextSpawn = now + 1000 + Math.random() * 3000;
         }
+        this.stars.forEach(s => {
+          s.age += dt;
+          s.x += s.vx * dt;
+          s.y += s.vy * dt;
+          s.alpha = Math.max(0, 1 - s.age / s.life);
+        });
+        this.stars = this.stars.filter(s => s.alpha > 0 && s.x < W + 100 && s.y < H + 100);
       },
       draw() {
-        if (this.alpha <= 0 || this.phase === 'wait') return;
-        const { x, y, cs: s, alpha } = this;
-        ctx.save(); ctx.globalAlpha = alpha;
-        ctx.strokeStyle = '#ff44cc'; ctx.shadowColor = '#ff44cc'; ctx.shadowBlur = 7; ctx.lineWidth = 1.6;
-        ctx.beginPath();
-        ctx.moveTo(x - s * 0.5, y - s * 1.5); ctx.lineTo(x - s * 0.5, y + s * 1.5);
-        ctx.moveTo(x + s * 0.5, y - s * 1.5); ctx.lineTo(x + s * 0.5, y + s * 1.5);
-        ctx.moveTo(x - s * 1.5, y - s * 0.5); ctx.lineTo(x + s * 1.5, y - s * 0.5);
-        ctx.moveTo(x - s * 1.5, y + s * 0.5); ctx.lineTo(x + s * 1.5, y + s * 0.5);
-        ctx.stroke();
-        this.marks.forEach(({ c, m, progress }) => {
-          const col = (c % 3) - 1, row = Math.floor(c / 3) - 1;
-          const cx = x + col * s, cy = y + row * s, mr = s * 0.36;
-          if (m === 'X') {
-            ctx.strokeStyle = '#00ddff'; ctx.shadowColor = '#00ddff'; ctx.shadowBlur = 10; ctx.lineWidth = 2.2;
-            const d = mr * progress;
-            ctx.beginPath(); ctx.moveTo(cx - d, cy - d); ctx.lineTo(cx + d, cy + d); ctx.stroke();
-            if (progress > 0.5) {
-              const d2 = mr * (progress - 0.5) * 2;
-              ctx.beginPath(); ctx.moveTo(cx + d2, cy - d2); ctx.lineTo(cx - d2, cy + d2); ctx.stroke();
-            }
-          } else {
-            ctx.strokeStyle = '#ff2288'; ctx.shadowColor = '#ff2288'; ctx.shadowBlur = 10; ctx.lineWidth = 2.2;
-            ctx.beginPath(); ctx.arc(cx, cy, mr, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * progress); ctx.stroke();
-          }
+        ctx.save();
+        this.stars.forEach(s => {
+          ctx.globalAlpha = s.alpha * 0.8;
+          const g = ctx.createLinearGradient(s.x, s.y, s.x - s.vx * 0.1, s.y - s.vy * 0.1);
+          g.addColorStop(0, '#fff');
+          g.addColorStop(1, 'transparent');
+          ctx.strokeStyle = g;
+          ctx.lineWidth = 2;
+          ctx.shadowColor = '#fff';
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.moveTo(s.x, s.y);
+          ctx.lineTo(s.x - s.vx * 0.12, s.y - s.vy * 0.12);
+          ctx.stroke();
         });
         ctx.restore();
       }
@@ -351,11 +325,11 @@ function Home({ socket }) {
     function tick(ts) {
       const dt = Math.min(0.05, (ts - lastT) / 1000);
       lastT = ts; scrollZ += SPEED * dt;
-      TTT.update(dt);
+      ShootingStars.update(dt, ts);
       ctx.clearRect(0, 0, W, H);
       drawBackground();
       drawStars();
-      TTT.draw();
+      ShootingStars.draw();
       drawSun(ts * 0.001);
       drawTerrain(buildGrid());
       drawAtmos();
@@ -376,7 +350,6 @@ function Home({ socket }) {
         x: r() * W, y: r() * H * 0.56, r: 0.5 + r() * 2,
         ph: r() * Math.PI * 2, sp: 0.6 + r() * 2.2, b: r() > 0.80,
       });
-      TTT.reset();
       window.addEventListener('resize', handleResize);
       animId = requestAnimationFrame(tick);
     }
