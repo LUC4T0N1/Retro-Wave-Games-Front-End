@@ -16,7 +16,7 @@ const MAZE_TEMPLATE = [
   [1,2,1,1,2,1,2,1,1,1,1,1,1,1,2,1,2,1,1,2,1],
   [1,2,2,2,2,1,2,2,2,2,0,2,2,2,2,1,2,2,2,2,1],
   [1,1,1,1,2,1,1,1,0,0,0,0,0,1,1,1,2,1,1,1,1],
-  [1,1,1,1,2,1,0,0,0,1,4,1,0,0,0,1,2,1,1,1,1],
+  [1,1,1,1,2,1,0,1,1,1,4,1,1,1,0,1,2,1,1,1,1],
   [1,1,1,1,2,1,0,1,0,0,0,0,0,1,0,1,2,1,1,1,1],
   [0,0,0,0,2,0,0,1,0,0,0,0,0,1,0,0,2,0,0,0,0],
   [1,1,1,1,2,1,0,1,1,1,1,1,1,1,0,1,2,1,1,1,1],
@@ -289,10 +289,13 @@ function OnlinePacmanGame({ socket, room, opponentName }) {
 
     function wrapX(x) { return ((x % COLS) + COLS) % COLS; }
 
-    function canMove(maze, x, y, dx, dy) {
+    function canMove(maze, x, y, dx, dy, allowDoor = false) {
       const ny = y + dy, wnx = wrapX(x + dx);
       if (ny < 0 || ny >= ROWS) return false;
-      return maze[ny][wnx] !== 1;
+      const cell = maze[ny][wnx];
+      if (cell === 1) return false;
+      if (cell === 4 && !allowDoor) return false;
+      return true;
     }
 
     function ghostAI(g, pm, maze, dt, s) {
@@ -319,10 +322,10 @@ function OnlinePacmanGame({ socket, room, opponentName }) {
         if (g.y > EXIT_ROW) {
           if (g.x !== EXIT_COL) {
             const dx = g.x < EXIT_COL ? 1 : -1;
-            if (canMove(maze, g.x, g.y, dx, 0)) g.x += dx;
-            else if (canMove(maze, g.x, g.y, 0, -1)) g.y--;
+            if (canMove(maze, g.x, g.y, dx, 0, true)) g.x += dx;
+            else if (canMove(maze, g.x, g.y, 0, -1, true)) g.y--;
           } else {
-            if (canMove(maze, g.x, g.y, 0, -1)) g.y--;
+            if (canMove(maze, g.x, g.y, 0, -1, true)) g.y--;
           }
         } else {
           g.mode = 'chase'; g.dx = 1; g.dy = 0;
@@ -540,7 +543,23 @@ function OnlinePacmanGame({ socket, room, opponentName }) {
       } else if (s.status === 'playing' && !resultRef.current) {
         // Pacman movement
         const pm = s.pacman;
-        pm.animT += dt; pm.moveAccum += dt;
+        pm.animT += dt; 
+
+        if (pm.nextDx === -pm.dx && pm.nextDy === -pm.dy && (pm.dx !== 0 || pm.dy !== 0)) {
+          pm.dx = pm.nextDx; pm.dy = pm.nextDy;
+          const tempX = pm.x, tempY = pm.y;
+          pm.x = pm.prevX; pm.y = pm.prevY;
+          pm.prevX = tempX; pm.prevY = tempY;
+          pm.moveAccum = Math.max(0, s.pacSpeed - pm.moveAccum);
+        }
+
+        if (pm.prevX === pm.x && pm.prevY === pm.y) {
+          if (canMove(s.maze, pm.x, pm.y, pm.nextDx, pm.nextDy)) {
+            pm.moveAccum = s.pacSpeed;
+          }
+        }
+
+        pm.moveAccum += dt;
         if (pm.moveAccum >= s.pacSpeed) {
           pm.prevX = pm.x; pm.prevY = pm.y; pm.moveAccum = 0;
           if (canMove(s.maze, pm.x, pm.y, pm.nextDx, pm.nextDy)) { pm.dx = pm.nextDx; pm.dy = pm.nextDy; }

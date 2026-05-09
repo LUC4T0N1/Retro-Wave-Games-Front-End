@@ -75,8 +75,69 @@ function Home({ socket }) {
     let W = 0, H = 0, scrollZ = 0, lastT = 0;
     let stars = [];
     let animId;
+    let offBg, offAtmos, offSun, offScanPattern;
 
     function seeded(s) { return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
+
+    function initOffscreen() {
+      if (!W || !H) return;
+      offBg = document.createElement('canvas'); offBg.width = W; offBg.height = H;
+      const bgCtx = offBg.getContext('2d');
+      const sky = bgCtx.createLinearGradient(0, 0, 0, H * HRZ);
+      sky.addColorStop(0, '#040010'); sky.addColorStop(0.20, '#0e0030');
+      sky.addColorStop(0.50, '#500062'); sky.addColorStop(0.80, '#cc0062'); sky.addColorStop(1, '#e8006e');
+      bgCtx.fillStyle = sky; bgCtx.fillRect(0, 0, W, H * HRZ);
+      const gnd = bgCtx.createLinearGradient(0, H * HRZ, 0, H);
+      gnd.addColorStop(0, '#240048'); gnd.addColorStop(0.35, '#160030'); gnd.addColorStop(1, '#080018');
+      bgCtx.fillStyle = gnd; bgCtx.fillRect(0, H * HRZ, W, H * (1 - HRZ));
+      bgCtx.save();
+      for (let i = 0; i < 40; i++) {
+        const y = (i / 40) * H * HRZ;
+        bgCtx.globalAlpha = 0.015 + (i / 40) * 0.055;
+        bgCtx.fillStyle = i > 25 ? '#ff1188' : '#440066';
+        bgCtx.fillRect(0, y, W, 2.5);
+      }
+      bgCtx.restore();
+
+      offAtmos = document.createElement('canvas'); offAtmos.width = W; offAtmos.height = H;
+      const atCtx = offAtmos.getContext('2d');
+      const hg = atCtx.createLinearGradient(0, H * (HRZ - 0.05), 0, H * (HRZ + 0.06));
+      hg.addColorStop(0, 'transparent'); hg.addColorStop(0.5, 'rgba(150,0,180,0.18)'); hg.addColorStop(1, 'transparent');
+      atCtx.fillStyle = hg; atCtx.fillRect(0, H * (HRZ - 0.05), W, H * 0.11);
+      const fg = atCtx.createLinearGradient(0, H * 0.90, 0, H);
+      fg.addColorStop(0, 'transparent'); fg.addColorStop(0.5, 'rgba(5,0,16,0.55)'); fg.addColorStop(1, 'rgba(4,0,12,0.88)');
+      atCtx.fillStyle = fg; atCtx.fillRect(0, H * 0.90, W, H * 0.10);
+      ['left', 'right'].forEach((_, i) => {
+        const g = atCtx.createLinearGradient(i === 0 ? 0 : W, 0, i === 0 ? W * 0.12 : W * 0.88, 0);
+        g.addColorStop(0, 'rgba(3,0,10,0.55)'); g.addColorStop(1, 'transparent');
+        atCtx.fillStyle = g; atCtx.fillRect(i === 0 ? 0 : W * 0.88, 0, W * 0.12, H);
+      });
+
+      offSun = document.createElement('canvas'); offSun.width = W; offSun.height = H;
+      const sCtx = offSun.getContext('2d');
+      const cx = W / 2, cy = H * (HRZ - 0.15), r = Math.min(W, H) * 0.15;
+      sCtx.save();
+      sCtx.beginPath(); sCtx.arc(cx, cy, r, 0, Math.PI * 2); sCtx.clip();
+      const sg = sCtx.createLinearGradient(cx, cy - r, cx, cy + r);
+      sg.addColorStop(0, '#ffee00'); sg.addColorStop(0.22, '#ff8800');
+      sg.addColorStop(0.55, '#ff2222'); sg.addColorStop(1, '#aa0044');
+      sCtx.fillStyle = sg; sCtx.fillRect(cx - r, cy - r, r * 2, r * 2);
+      for (let i = 0; i < 10; i++) {
+        const sy = cy + (i / 10) * r * 0.88;
+        sCtx.fillStyle = `rgba(4,0,10,${0.40 + i * 0.042})`;
+        sCtx.fillRect(cx - r, sy, r * 2, 5.5 + i * 0.5);
+      }
+      sCtx.restore();
+      sCtx.save();
+      sCtx.beginPath(); sCtx.arc(cx, cy, r, 0, Math.PI * 2);
+      sCtx.strokeStyle = 'rgba(255,200,0,0.18)'; sCtx.lineWidth = 3; sCtx.stroke();
+      sCtx.restore();
+
+      const scanCv = document.createElement('canvas'); scanCv.width = 1; scanCv.height = 4;
+      const scCtx = scanCv.getContext('2d');
+      scCtx.fillStyle = 'rgba(0,0,0,0.044)'; scCtx.fillRect(0, 0, 1, 2);
+      offScanPattern = ctx.createPattern(scanCv, 'repeat');
+    }
 
     function th(wx, wz) {
       const nx = wx / (W_WIDE / 2);
@@ -165,26 +226,7 @@ function Home({ socket }) {
     };
 
     function drawBackground() {
-      const sky = ctx.createLinearGradient(0, 0, 0, H * HRZ);
-      sky.addColorStop(0, '#040010');
-      sky.addColorStop(0.20, '#0e0030');
-      sky.addColorStop(0.50, '#500062');
-      sky.addColorStop(0.80, '#cc0062');
-      sky.addColorStop(1, '#e8006e');
-      ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H * HRZ);
-      const gnd = ctx.createLinearGradient(0, H * HRZ, 0, H);
-      gnd.addColorStop(0, '#240048');
-      gnd.addColorStop(0.35, '#160030');
-      gnd.addColorStop(1, '#080018');
-      ctx.fillStyle = gnd; ctx.fillRect(0, H * HRZ, W, H * (1 - HRZ));
-      ctx.save();
-      for (let i = 0; i < 40; i++) {
-        const y = (i / 40) * H * HRZ;
-        ctx.globalAlpha = 0.015 + (i / 40) * 0.055;
-        ctx.fillStyle = i > 25 ? '#ff1188' : '#440066';
-        ctx.fillRect(0, y, W, 2.5);
-      }
-      ctx.restore();
+      if (offBg) ctx.drawImage(offBg, 0, 0);
     }
 
     function drawStars() {
@@ -218,24 +260,8 @@ function Home({ socket }) {
       og.addColorStop(1, 'transparent');
       ctx.fillStyle = og;
       ctx.fillRect(cx - r * 3.2, cy - r * 3.2, r * 6.4, r * 6.4);
-      ctx.save();
-      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
-      const sg = ctx.createLinearGradient(cx, cy - r, cx, cy + r);
-      sg.addColorStop(0, '#ffee00');
-      sg.addColorStop(0.22, '#ff8800');
-      sg.addColorStop(0.55, '#ff2222');
-      sg.addColorStop(1, '#aa0044');
-      ctx.fillStyle = sg; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-      for (let i = 0; i < 10; i++) {
-        const sy = cy + (i / 10) * r * 0.88;
-        ctx.fillStyle = `rgba(4,0,10,${0.40 + i * 0.042})`;
-        ctx.fillRect(cx - r, sy, r * 2, 5.5 + i * 0.5);
-      }
-      ctx.restore();
-      ctx.save();
-      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255,200,0,0.18)'; ctx.lineWidth = 3; ctx.stroke();
-      ctx.restore();
+      
+      if (offSun) ctx.drawImage(offSun, 0, 0);
     }
 
     function drawTerrain(rows) {
@@ -304,27 +330,14 @@ function Home({ socket }) {
     }
 
     function drawAtmos() {
-      const hg = ctx.createLinearGradient(0, H * (HRZ - 0.05), 0, H * (HRZ + 0.06));
-      hg.addColorStop(0, 'transparent');
-      hg.addColorStop(0.5, 'rgba(150,0,180,0.18)');
-      hg.addColorStop(1, 'transparent');
-      ctx.fillStyle = hg; ctx.fillRect(0, H * (HRZ - 0.05), W, H * 0.11);
-      const fg = ctx.createLinearGradient(0, H * 0.90, 0, H);
-      fg.addColorStop(0, 'transparent');
-      fg.addColorStop(0.5, 'rgba(5,0,16,0.55)');
-      fg.addColorStop(1, 'rgba(4,0,12,0.88)');
-      ctx.fillStyle = fg; ctx.fillRect(0, H * 0.90, W, H * 0.10);
-      ['left', 'right'].forEach((_, i) => {
-        const g = ctx.createLinearGradient(i === 0 ? 0 : W, 0, i === 0 ? W * 0.12 : W * 0.88, 0);
-        g.addColorStop(0, 'rgba(3,0,10,0.55)'); g.addColorStop(1, 'transparent');
-        ctx.fillStyle = g; ctx.fillRect(i === 0 ? 0 : W * 0.88, 0, W * 0.12, H);
-      });
+      if (offAtmos) ctx.drawImage(offAtmos, 0, 0);
     }
 
     function drawScan() {
-      ctx.save(); ctx.globalAlpha = 0.044;
-      for (let y = 0; y < H; y += 4) { ctx.fillStyle = '#000'; ctx.fillRect(0, y, W, 2); }
-      ctx.restore();
+      if (offScanPattern) {
+        ctx.fillStyle = offScanPattern;
+        ctx.fillRect(0, 0, W, H);
+      }
     }
 
     function tick(ts) {
@@ -345,11 +358,13 @@ function Home({ socket }) {
     function handleResize() {
       W = cv.width = window.innerWidth;
       H = cv.height = window.innerHeight;
+      initOffscreen();
     }
 
     function init() {
       W = cv.width = window.innerWidth;
       H = cv.height = window.innerHeight;
+      initOffscreen();
       const r = seeded(42);
       for (let i = 0; i < 160; i++) stars.push({
         x: r() * W, y: r() * H * 0.56, r: 0.5 + r() * 2,
