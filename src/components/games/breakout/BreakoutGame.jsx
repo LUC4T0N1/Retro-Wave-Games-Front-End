@@ -440,9 +440,8 @@ export default function BreakoutGame() {
     <div style={{ width: '100vw', minHeight: '100vh', background: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', overflow: 'hidden', position: 'relative' }}>
       <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
 
-      <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px 0', boxSizing: 'border-box', position: 'relative', zIndex: 10 }}>
+      <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '14px 24px 0', boxSizing: 'border-box', position: 'relative', zIndex: 10 }}>
         <HomeButton />
-        <span style={{ color: '#ffb852', fontFamily: "'Courier New', monospace", fontSize: 22, fontWeight: 'bold', letterSpacing: 4, textShadow: '0 0 12px #ffb852' }}>BREAKOUT</span>
         <span style={{ color: '#ff2d78', fontFamily: "'Courier New', monospace", fontSize: 14, letterSpacing: 1, textShadow: '0 0 8px #ff2d78' }}>BEST {getBest()}</span>
       </div>
 
