@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-
+import { useTranslation } from 'react-i18next';
+import { containsProfanity } from '../../../utils/profanity';
 
 import OnlineTetrisGame from './OnlineTetrisGame';
 import HomeButton from '../../ui/HomeButton';
 import RetroGrid from '../../ui/RetroGrid';
 
 function TetrisRandomQueue({ socket }) {
+  const { t } = useTranslation();
   const [phase, setPhase]       = useState('form');
   const [username, setUsername] = useState('');
   const [gameData, setGameData] = useState(null);
@@ -24,6 +26,7 @@ function TetrisRandomQueue({ socket }) {
     e.preventDefault();
     const name = username.trim();
     if (!name) { setError('Enter your username'); return; }
+    if (containsProfanity(name)) { setError(t('profanity-warning')); return; }
     setError('');
     socket.emit('tetris-join-queue', { username: name });
     setPhase('queued');

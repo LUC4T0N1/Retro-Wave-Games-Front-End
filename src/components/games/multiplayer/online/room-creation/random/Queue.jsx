@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import OnlineGame from "../../game-logic/OnlineGame";
+import { containsProfanity } from '../../../../../../utils/profanity';
 import JoinQueueForm from "./join-queue-form/JoinQueueForm";
 import "../RoomCreation.css";
 import { useTranslation } from 'react-i18next';
@@ -14,12 +15,14 @@ function Queue({ socket }) {
   const [showChat, setShowChat] = useState(false);
   const [roomReady, setRoomReady] = useState(false);
   const [isOtherPlayerReady, setIsOtherPlayerReady] = useState(false);
+  const [error, setError] = useState("");
 
   const joinRoom = () => {
-    if (username !== "") {
-      socket.emit("join_queue", username);
-      setShowChat(true);
-    }
+    if (username === "") { setError(t('name-warning')); return; }
+    if (containsProfanity(username)) { setError(t('profanity-warning')); return; }
+    setError("");
+    socket.emit("join_queue", username);
+    setShowChat(true);
   };
 
   useEffect(() => {
@@ -62,7 +65,16 @@ function Queue({ socket }) {
         display: 'flex', flexDirection: 'column', alignItems: 'center',
       }}>
         {!showChat ? (
-          <JoinQueueForm setUsername={setUsername} joinRoom={joinRoom} />
+          <>
+            <JoinQueueForm setUsername={setUsername} joinRoom={joinRoom} />
+            {error && (
+              <div style={{
+                fontFamily: "'Orbitron', sans-serif", fontSize: 11,
+                color: '#ff2d78', letterSpacing: '0.12em',
+                textShadow: '0 0 10px #ff2d78', marginTop: 8,
+              }}>{error}</div>
+            )}
+          </>
         ) : (
           <div style={{ textAlign: 'center' }}>
             <div className="retro-waiting-title">{t('waiting-random')}</div>

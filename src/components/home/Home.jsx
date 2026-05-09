@@ -20,7 +20,7 @@ function NeonButton({ children, onClick, to, color = '#00e5ff', size = 'md', del
     fontWeight: 700,
     letterSpacing: '0.12em',
     cursor: 'pointer',
-    transition: 'all 0.16s',
+    transition: 'none',
     textAlign: 'center',
     boxShadow: hov
       ? `0 0 24px ${color}99, 0 0 48px ${color}44, inset 0 0 16px ${color}22`

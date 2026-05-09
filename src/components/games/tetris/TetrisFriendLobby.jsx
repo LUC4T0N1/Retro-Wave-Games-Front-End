@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-
+import { useTranslation } from 'react-i18next';
+import { containsProfanity } from '../../../utils/profanity';
 
 import OnlineTetrisGame from './OnlineTetrisGame';
 import HomeButton from '../../ui/HomeButton';
 import RetroGrid from '../../ui/RetroGrid';
 
 function TetrisFriendLobby({ socket }) {
+  const { t } = useTranslation();
   const [phase, setPhase]       = useState('form');
   const [username, setUsername] = useState('');
   const [roomId, setRoomId]     = useState('');
@@ -25,6 +27,7 @@ function TetrisFriendLobby({ socket }) {
     const name = username.trim();
     const room = roomId.trim();
     if (!name) { setError('Enter your username'); return; }
+    if (containsProfanity(name)) { setError(t('profanity-warning')); return; }
     if (!room) { setError('Enter a room ID'); return; }
     setError('');
     socket.emit('tetris-join-room', { room, username: name });

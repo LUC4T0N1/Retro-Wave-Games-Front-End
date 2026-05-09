@@ -29,5 +29,6 @@
   "join-queue": "JOIN QUEUE",
   "queue-title": "FIND A MATCH",
   "with-friend": "WITH FRIEND",
-  "medium": "Medium"
+  "medium": "Medium",
+  "profanity-warning": "USERNAME CONTAINS INAPPROPRIATE LANGUAGE"
 }

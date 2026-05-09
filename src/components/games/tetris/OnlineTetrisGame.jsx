@@ -668,7 +668,7 @@ export default function OnlineTetrisGame({ socket, room, opponentName }) {
       socket.off('tetris-restart-ready', onRestartReady);
       socket.emit('tetris-leave', { room });
     };
-  }, [socket, room, lockAndNext, doHold, doRestart, render]);
+  }, [socket, room, lockAndNext, doHold, doRestart, render, checkGameOver]);
 
   const resultColor = result === 'win' ? '#00e5ff' : result === 'tie' ? '#ffe066' : result === 'opp-left' ? '#ffe066' : '#ff2d78';
   const resultText  = result === 'win' ? 'YOU WIN!' : result === 'lose' ? 'YOU LOSE' : result === 'tie' ? 'TIE!' : 'OPPONENT LEFT';

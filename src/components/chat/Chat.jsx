@@ -3,6 +3,7 @@ import ScrollToBottom from "react-scroll-to-bottom";
 import "./Chat.css";
 import {useTranslation} from 'react-i18next';
 import { t } from "i18next";
+import { censorMessage } from "../../utils/profanity";
 
 function Chat({ socket, username, room }) {
   const [currentMessage, setCurrentMessage] = useState("");
@@ -14,7 +15,7 @@ function Chat({ socket, username, room }) {
       const messageData = {
         room: room,
         author: username,
-        message: currentMessage,
+        message: censorMessage(currentMessage),
         time: (() => {
           const d = new Date();
           return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');

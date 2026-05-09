@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import OnlineGame from "../../game-logic/OnlineGame";
+import { containsProfanity } from '../../../../../../utils/profanity';
 import JoinForm from "./join-friend-form/JoinFriendForm";
 import "../RoomCreation.css";
 import { useTranslation } from 'react-i18next';
@@ -16,12 +17,19 @@ function RoomSelection({ socket }) {
   const [roomReady, setRoomReady] = useState(false);
   const [rightRoomName, setRightRoomName] = useState(true);
   const [rightUserName, setRightUserName] = useState(true);
+  const [profanityError, setProfanityError] = useState(false);
 
   const joinRoom = async () => {
     if (username === "") {
       setRightUserName(false);
+      setProfanityError(false);
     } else {
       setRightUserName(true);
+      if (containsProfanity(username)) {
+        setProfanityError(true);
+        return;
+      }
+      setProfanityError(false);
       if (!containsAnyLetter(room)) {
         setRightRoomName(false);
       } else {
@@ -87,6 +95,13 @@ function RoomSelection({ socket }) {
                 color: '#ff2d78', letterSpacing: '0.12em',
                 textShadow: '0 0 10px #ff2d78',
               }}>{t('name-warning')}</div>
+            )}
+            {profanityError && (
+              <div style={{
+                fontFamily: "'Orbitron', sans-serif", fontSize: 11,
+                color: '#ff2d78', letterSpacing: '0.12em',
+                textShadow: '0 0 10px #ff2d78',
+              }}>{t('profanity-warning')}</div>
             )}
           </>
         ) : (

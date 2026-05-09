@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import OnlineBreakoutGame from './OnlineBreakoutGame';
+import { containsProfanity } from '../../../utils/profanity';
 import HomeButton from '../../ui/HomeButton';
 import RetroGrid from '../../ui/RetroGrid';
 
 function BreakoutRandomQueue({ socket }) {
+  const { t } = useTranslation();
   const [phase, setPhase]       = useState('form');
   const [username, setUsername] = useState('');
   const [gameData, setGameData] = useState(null);
@@ -23,6 +26,7 @@ function BreakoutRandomQueue({ socket }) {
     e.preventDefault();
     const name = username.trim();
     if (!name) { setError('Enter your username'); return; }
+    if (containsProfanity(name)) { setError(t('profanity-warning')); return; }
     setError('');
     socket.emit('breakout-join-queue', { username: name });
     setPhase('queued');

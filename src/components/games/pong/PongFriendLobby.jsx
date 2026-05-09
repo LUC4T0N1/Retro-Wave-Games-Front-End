@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import OnlinePongGame from './OnlinePongGame';
+import { containsProfanity } from '../../../utils/profanity';
 import HomeButton from '../../ui/HomeButton';
 import RetroGrid from '../../ui/RetroGrid';
 
 function PongFriendLobby({ socket }) {
+  const { t } = useTranslation();
   const [phase, setPhase]       = useState('form'); // 'form' | 'waiting' | 'game'
   const [username, setUsername] = useState('');
   const [roomId, setRoomId]     = useState('');
@@ -24,6 +27,7 @@ function PongFriendLobby({ socket }) {
     const name = username.trim();
     const room = roomId.trim();
     if (!name) { setError('Enter your username'); return; }
+    if (containsProfanity(name)) { setError(t('profanity-warning')); return; }
     if (!room) { setError('Enter a room ID'); return; }
     setError('');
     socket.emit('pong-join-room', { room, username: name });
