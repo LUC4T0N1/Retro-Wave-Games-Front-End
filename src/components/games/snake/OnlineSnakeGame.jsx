@@ -32,6 +32,7 @@ function makeMyState(level = 1, score = 0) {
     food: randomFood(snake),
     dir: { dx: 1, dy: 0 },
     nextDir: { dx: 1, dy: 0 },
+    dirQueue: [],
     score, level,
     foodEaten: 0,
     moveAccum: 0,
@@ -348,7 +349,11 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
       const nd = DIR[e.key];
       if (!nd) return;
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) e.preventDefault();
-      if (!(nd.dx === -s.dir.dx && nd.dy === -s.dir.dy)) s.nextDir = nd;
+      const lastDir = (s.dirQueue && s.dirQueue.length > 0) ? s.dirQueue[s.dirQueue.length - 1] : s.dir;
+      if (!(nd.dx === -lastDir.dx && nd.dy === -lastDir.dy) && !(nd.dx === lastDir.dx && nd.dy === lastDir.dy)) {
+        if (!s.dirQueue) s.dirQueue = [];
+        if (s.dirQueue.length < 3) s.dirQueue.push(nd);
+      }
     };
     window.addEventListener('keydown', onKey);
 
@@ -365,7 +370,11 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
       const nd = Math.abs(dx) > Math.abs(dy)
         ? (dx > 0 ? { dx: 1, dy: 0 } : { dx: -1, dy: 0 })
         : (dy > 0 ? { dx: 0, dy: 1 } : { dx: 0, dy: -1 });
-      if (!(nd.dx === -s.dir.dx && nd.dy === -s.dir.dy)) s.nextDir = nd;
+      const lastDir = (s.dirQueue && s.dirQueue.length > 0) ? s.dirQueue[s.dirQueue.length - 1] : s.dir;
+      if (!(nd.dx === -lastDir.dx && nd.dy === -lastDir.dy) && !(nd.dx === lastDir.dx && nd.dy === lastDir.dy)) {
+        if (!s.dirQueue) s.dirQueue = [];
+        if (s.dirQueue.length < 3) s.dirQueue.push(nd);
+      }
     };
     window.addEventListener('touchstart', onStart, { passive: true });
     window.addEventListener('touchend', onEnd, { passive: true });
@@ -383,23 +392,29 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
 
         s.moveAccum += dt;
         if (s.moveAccum >= s.moveInterval) {
-          const nd = s.nextDir;
-          if (!(nd.dx === -s.dir.dx && nd.dy === -s.dir.dy)) s.dir = { ...nd };
+          let nd = s.dir;
+          if (s.dirQueue && s.dirQueue.length > 0) nd = s.dirQueue[0];
 
           const head = s.snake[0];
-          const newX = head.x + s.dir.dx;
-          const newY = head.y + s.dir.dy;
+          const newX = head.x + nd.dx;
+          const newY = head.y + nd.dy;
 
           const isDead = 
             newX < 0 || newX >= COLS || newY < 0 || newY >= ROWS ||
             s.snake.slice(1, -1).some(seg => seg.x === newX && seg.y === newY);
 
           if (isDead) {
-            s.status = 'dead';
-            s.moveAccum = s.moveInterval;
-            socket.emit('snake-died', { room, score: s.score });
-            checkGameOver();
+            s.graceAccum = (s.graceAccum || 0) + dt;
+            if (s.graceAccum > 0.12) {
+              s.status = 'dead';
+              s.moveAccum = s.moveInterval;
+              socket.emit('snake-died', { room, score: s.score });
+              checkGameOver();
+            }
           } else {
+            s.graceAccum = 0;
+            if (s.dirQueue && s.dirQueue.length > 0) s.dir = s.dirQueue.shift();
+
             const atFood = newX === s.food.x && newY === s.food.y;
             const old = s.snake.map(seg => ({ x: seg.x, y: seg.y }));
             s.snake.forEach(seg => { seg.prevX = seg.x; seg.prevY = seg.y; });

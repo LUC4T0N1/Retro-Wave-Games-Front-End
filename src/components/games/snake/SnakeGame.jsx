@@ -36,6 +36,7 @@ function buildState(level = 1, score = 0) {
     food: randomFood(snake),
     dir: { dx: 1, dy: 0 },
     nextDir: { dx: 1, dy: 0 },
+    dirQueue: [],
     score, best: getBest(), level,
     foodEaten: 0,
     moveAccum: 0,
@@ -127,7 +128,11 @@ export default function SnakeGame() {
       const nd = DIR[e.key];
       if (!nd) return;
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) e.preventDefault();
-      if (!(nd.dx === -st.dir.dx && nd.dy === -st.dir.dy)) st.nextDir = nd;
+      const lastDir = (st.dirQueue && st.dirQueue.length > 0) ? st.dirQueue[st.dirQueue.length - 1] : st.dir;
+      if (!(nd.dx === -lastDir.dx && nd.dy === -lastDir.dy) && !(nd.dx === lastDir.dx && nd.dy === lastDir.dy)) {
+        if (!st.dirQueue) st.dirQueue = [];
+        if (st.dirQueue.length < 3) st.dirQueue.push(nd);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -147,7 +152,11 @@ export default function SnakeGame() {
       const nd = Math.abs(dx) > Math.abs(dy)
         ? (dx > 0 ? { dx: 1, dy: 0 } : { dx: -1, dy: 0 })
         : (dy > 0 ? { dx: 0, dy: 1 } : { dx: 0, dy: -1 });
-      if (!(nd.dx === -st.dir.dx && nd.dy === -st.dir.dy)) st.nextDir = nd;
+      const lastDir = (st.dirQueue && st.dirQueue.length > 0) ? st.dirQueue[st.dirQueue.length - 1] : st.dir;
+      if (!(nd.dx === -lastDir.dx && nd.dy === -lastDir.dy) && !(nd.dx === lastDir.dx && nd.dy === lastDir.dy)) {
+        if (!st.dirQueue) st.dirQueue = [];
+        if (st.dirQueue.length < 3) st.dirQueue.push(nd);
+      }
     };
     window.addEventListener('touchstart', onStart, { passive: true });
     window.addEventListener('touchend', onEnd, { passive: true });
@@ -260,15 +269,28 @@ export default function SnakeGame() {
       s.moveAccum += dt;
 
       if (s.moveAccum >= s.moveInterval) {
-        const nd = s.nextDir;
-        if (!(nd.dx === -s.dir.dx && nd.dy === -s.dir.dy)) s.dir = { ...nd };
+        let nd = s.dir;
+        if (s.dirQueue && s.dirQueue.length > 0) nd = s.dirQueue[0];
 
         const head = s.snake[0];
-        const newX = head.x + s.dir.dx;
-        const newY = head.y + s.dir.dy;
+        const newX = head.x + nd.dx;
+        const newY = head.y + nd.dy;
 
-        if (newX < 0 || newX >= COLS || newY < 0 || newY >= ROWS) { killSnake(s, ts); animRef.current = requestAnimationFrame(tick); return; }
-        if (s.snake.slice(1, -1).some(seg => seg.x === newX && seg.y === newY)) { killSnake(s, ts); animRef.current = requestAnimationFrame(tick); return; }
+        const isWall = newX < 0 || newX >= COLS || newY < 0 || newY >= ROWS;
+        const isSelf = s.snake.slice(1, -1).some(seg => seg.x === newX && seg.y === newY);
+
+        if (isWall || isSelf) {
+          s.graceAccum = (s.graceAccum || 0) + dt;
+          if (s.graceAccum > 0.12) {
+            killSnake(s, ts); animRef.current = requestAnimationFrame(tick); return;
+          }
+          draw(s, ts);
+          animRef.current = requestAnimationFrame(tick);
+          return;
+        }
+
+        s.graceAccum = 0;
+        if (s.dirQueue && s.dirQueue.length > 0) s.dir = s.dirQueue.shift();
 
         const atFood = newX === s.food.x && newY === s.food.y;
         const old = s.snake.map(seg => ({ x: seg.x, y: seg.y }));
