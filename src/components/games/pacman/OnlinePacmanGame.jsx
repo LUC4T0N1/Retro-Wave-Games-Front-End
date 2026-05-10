@@ -16,7 +16,7 @@ const MAZE_TEMPLATE = [
   [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
   [1,2,1,1,2,1,2,1,1,1,1,1,1,1,2,1,2,1,1,2,1],
   [1,2,2,2,2,1,2,2,2,2,0,2,2,2,2,1,2,2,2,2,1],
-  [1,1,1,1,2,1,1,1,0,0,0,0,0,1,1,1,2,1,1,1,1],
+  [1,1,1,1,2,1,0,1,0,0,0,0,0,1,0,1,2,1,1,1,1],
   [1,1,1,1,2,1,0,1,1,1,4,1,1,1,0,1,2,1,1,1,1],
   [1,1,1,1,2,1,0,1,0,0,0,0,0,1,0,1,2,1,1,1,1],
   [0,0,0,0,2,0,0,1,0,0,0,0,0,1,0,0,2,0,0,0,0],
@@ -62,11 +62,11 @@ function lp(a, b, t) { return a + (b - a) * Math.min(1, Math.max(0, t)); }
 
 function OnlinePacmanGame({ socket, room, opponentName }) {
   const MP_CELL = isMobile
-    ? Math.floor(Math.min(window.innerWidth * 0.90, 320) / COLS)
+    ? Math.floor(Math.min(window.innerWidth * 0.44, 200) / COLS)
     : 20;
   const CW = MP_CELL * COLS;
   const CH = MP_CELL * ROWS;
-  const showOppCanvas = !isMobile;
+  const showOppCanvas = true;
 
   const myCanvasRef    = useRef(null);
   const oppCanvasRef   = useRef(null);
@@ -738,7 +738,7 @@ function OnlinePacmanGame({ socket, room, opponentName }) {
         </div>
       )}
 
-      <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: 'flex-start', gap: isMobile ? 12 : 20 }}>
+      <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: isMobile ? 8 : 20, marginTop: isMobile ? -60 : 0 }}>
 
         {/* Own game column */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
@@ -750,11 +750,7 @@ function OnlinePacmanGame({ socket, room, opponentName }) {
           <div style={{ border: '2px solid rgba(0,180,255,0.4)', borderRadius: 4, boxShadow: '0 0 32px rgba(0,100,255,0.28),inset 0 0 24px rgba(0,0,40,0.85)', overflow: 'hidden' }}>
             <canvas ref={myCanvasRef} width={CW} height={CH} style={{ display: 'block' }} />
           </div>
-          {isMobile && !result && (
-            <div style={{ marginTop: 20 }}>
-              <PacmanMobileControls onDirectionChange={changeDirection} />
-            </div>
-          )}
+
         </div>
 
         {/* Opponent column */}
@@ -777,10 +773,11 @@ function OnlinePacmanGame({ socket, room, opponentName }) {
         </div>
       </div>
 
-      {/* Mobile controls hint */}
-      {isMobile && (
-        <div style={{ position: 'absolute', bottom: 16, fontFamily: "'VT323',monospace", fontSize: 13, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.2em', textTransform: 'uppercase', zIndex: 10 }}>
-          SWIPE TO MOVE
+      {isMobile && !result && (
+        <div style={{ position: 'fixed', bottom: 40, left: 0, width: '100%', display: 'flex', justifyContent: 'center', pointerEvents: 'none', zIndex: 1000 }}>
+          <div style={{ pointerEvents: 'auto' }}>
+            <PacmanMobileControls onDirectionChange={changeDirection} />
+          </div>
         </div>
       )}
     </div>
