@@ -1,4 +1,5 @@
 import { useEffect, useRef, useMemo } from "react";
+import isMobile from "../../utils/isMobile";
 
 function RetroGrid({
   showScanlines = true,
@@ -20,6 +21,7 @@ function RetroGrid({
   ], []);
 
   useEffect(() => {
+    if (isMobile) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -191,6 +193,15 @@ function RetroGrid({
       cancelAnimationFrame(animationId);
     };
   }, [palette, showScanlines, glowEffect]);
+
+  if (isMobile) {
+    return (
+      <div
+        className={className}
+        style={{ display: "block", width: "100%", height: "100%", background: "#000000", ...style }}
+      />
+    );
+  }
 
   return (
     <canvas

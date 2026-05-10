@@ -10,13 +10,13 @@ function NeonButton({ children, onClick, to, color = '#00e5ff', size = 'md', del
   const style = {
     display: 'block',
     width: '100%',
-    padding: lg ? '18px 40px' : '13px 28px',
+    padding: lg ? '13px 28px' : '10px 20px',
     background: hov ? `${color}18` : 'rgba(4,0,18,0.65)',
     border: `2px solid ${color}`,
     borderRadius: 3,
     color: hov ? '#fff' : color,
     fontFamily: "'Orbitron', sans-serif",
-    fontSize: lg ? 17 : 13,
+    fontSize: lg ? 15 : 12,
     fontWeight: 700,
     letterSpacing: '0.12em',
     cursor: 'pointer',
@@ -26,7 +26,7 @@ function NeonButton({ children, onClick, to, color = '#00e5ff', size = 'md', del
       ? `0 0 24px ${color}99, 0 0 48px ${color}44, inset 0 0 16px ${color}22`
       : `0 0 8px ${color}33`,
     animation: `fadeDown 0.4s ${delay}s both`,
-    backdropFilter: 'blur(12px)',
+    backdropFilter: isMobile ? 'none' : 'blur(12px)',
     textTransform: 'uppercase',
     textDecoration: 'none',
     boxSizing: 'border-box',
@@ -428,25 +428,27 @@ function Home({ socket }) {
       )}
 
       {/* Scanlines overlay */}
-      <div style={{
-        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 80,
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.055) 50%, transparent 50%)',
-        backgroundSize: '100% 4px',
-      }} />
+      {!isMobile && (
+        <div style={{
+          position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 80,
+          backgroundImage: 'linear-gradient(rgba(0,0,0,0.055) 50%, transparent 50%)',
+          backgroundSize: '100% 4px',
+        }} />
+      )}
 
       {/* Language toggle */}
       <div style={{
-        position: 'fixed', top: 24, right: 28, zIndex: 50, display: 'flex',
+        position: 'fixed', top: 24, right: isMobile ? 12 : 28, zIndex: 50, display: 'flex',
         border: '1.5px solid #6600cc88', borderRadius: 3, overflow: 'hidden',
       }}>
         {['pt', 'en'].map(l => (
           <button key={l} onClick={() => i18n.changeLanguage(l)} style={{
-            padding: '7px 16px',
+            padding: isMobile ? '5px 10px' : '7px 16px',
             background: currentLang === l ? '#6600ccaa' : 'rgba(4,0,18,0.75)',
             border: 'none',
             color: currentLang === l ? '#fff' : '#8844ccbb',
             fontFamily: "'Orbitron', sans-serif",
-            fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
+            fontSize: isMobile ? 9 : 10, fontWeight: 700, letterSpacing: '0.1em',
             cursor: 'pointer', transition: 'all 0.18s',
             boxShadow: currentLang === l ? '0 0 14px #6600cc55' : 'none',
           }}>{l.toUpperCase()}</button>
@@ -464,14 +466,14 @@ function Home({ socket }) {
           <div style={{
             fontFamily: "'VT323', monospace", fontSize: 28, color: '#ff2d78',
             letterSpacing: '0.7em', textShadow: '0 0 16px #ff2d78, 0 0 32px #ff2d7855',
-            marginBottom: 10, opacity: 0.82,
+            marginBottom: 10, opacity: 0.82, marginLeft: '0.7em',
           }}>{screenIcon}</div>
           <h1 style={{
             fontFamily: "'Orbitron', sans-serif",
             fontSize: 'clamp(26px, 5.5vw, 62px)',
             fontWeight: 900, letterSpacing: '0.12em', color: '#fff',
-            animation: 'logoIn 1s cubic-bezier(.22,1,.36,1) both, glowPulse 3.2s 1s ease-in-out infinite',
-            lineHeight: 1.1, textTransform: 'uppercase', margin: 0,
+            animation: isMobile ? 'logoIn 1s cubic-bezier(.22,1,.36,1) both' : 'logoIn 1s cubic-bezier(.22,1,.36,1) both, glowPulse 3.2s 1s ease-in-out infinite',
+            lineHeight: 1.1, textTransform: 'uppercase', margin: 0, marginLeft: '0.12em',
           }}>{screenTitle}</h1>
           <div style={{
             height: 3, width: '74%', margin: '14px auto 0',
@@ -482,16 +484,16 @@ function Home({ socket }) {
 
         {/* Card */}
         <div style={{
-          width: '100%', maxWidth: 380,
+          width: '100%', maxWidth: 360,
           background: 'rgba(4,0,18,0.72)',
           border: '1.5px solid rgba(0,229,255,0.30)',
-          borderRadius: 6, padding: '34px 36px 30px',
-          backdropFilter: 'blur(16px)',
+          borderRadius: 6, padding: '24px 28px 20px',
+          backdropFilter: isMobile ? 'none' : 'blur(16px)',
           boxShadow: '0 0 40px rgba(180,0,255,0.18), 0 0 80px rgba(100,0,255,0.08), inset 0 0 40px rgba(100,0,255,0.04)',
-          animation: 'neonBorder 3.5s ease-in-out infinite',
+          animation: isMobile ? 'none' : 'neonBorder 3.5s ease-in-out infinite',
         }}>
           {screen === 'games' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18, animation: 'fadeUp 0.5s both' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'fadeUp 0.5s both' }}>
               <NeonButton color="#ff2d78" size="lg" onClick={() => setScreen('home')} delay={0.10}>
                 {t('tictactoe')}
               </NeonButton>
@@ -517,7 +519,7 @@ function Home({ socket }) {
           )}
 
           {screen === 'home' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18, animation: 'fadeUp 0.5s both' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'fadeUp 0.5s both' }}>
               <NeonButton color="#ff2d78" size="lg" onClick={() => setScreen('multi')} delay={0.10}>
                 {t('multiplayer')}
               </NeonButton>
@@ -549,7 +551,7 @@ function Home({ socket }) {
           )}
 
           {screen === 'pong' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18, animation: 'fadeUp 0.4s both' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'fadeUp 0.4s both' }}>
               <NeonButton color="#ff8c00" size="lg" onClick={() => setScreen('pong-single')} delay={0.10}>
                 {t('singleplayer')}
               </NeonButton>
@@ -596,7 +598,7 @@ function Home({ socket }) {
           )}
 
           {screen === 'pacman' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18, animation: 'fadeUp 0.4s both' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'fadeUp 0.4s both' }}>
               <NeonButton color="#cc00ff" size="lg" to="/pacman" delay={0.10}>
                 {t('singleplayer')}
               </NeonButton>
@@ -627,7 +629,7 @@ function Home({ socket }) {
           )}
 
           {screen === 'snake' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18, animation: 'fadeUp 0.4s both' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'fadeUp 0.4s both' }}>
               <NeonButton color="#00ffcc" size="lg" to="/snake" delay={0.10}>
                 {t('singleplayer')}
               </NeonButton>
@@ -658,7 +660,7 @@ function Home({ socket }) {
           )}
 
           {screen === 'breakout' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18, animation: 'fadeUp 0.4s both' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'fadeUp 0.4s both' }}>
               <NeonButton color="#ffb852" size="lg" to="/breakout" delay={0.10}>
                 {t('singleplayer')}
               </NeonButton>
@@ -689,7 +691,7 @@ function Home({ socket }) {
           )}
 
           {screen === 'infinity-run' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18, animation: 'fadeUp 0.4s both' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'fadeUp 0.4s both' }}>
               <NeonButton color="#00b4ff" size="lg" to="/infinity-run" delay={0.10}>
                 {t('singleplayer')}
               </NeonButton>
@@ -720,7 +722,7 @@ function Home({ socket }) {
           )}
 
           {screen === 'tetris' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18, animation: 'fadeUp 0.4s both' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'fadeUp 0.4s both' }}>
               <NeonButton color="#ff2d78" size="lg" to="/tetris" delay={0.10}>
                 {t('singleplayer')}
               </NeonButton>
