@@ -30,5 +30,13 @@
     "queue-title": "ENCONTRAR PARTIDA",
     "with-friend": "COM AMIGO",
     "medium": "Médio",
-  "profanity-warning": "O NOME CONTÉM LINGUAGEM INAPROPRIADA"
+  "profanity-warning": "O NOME CONTÉM LINGUAGEM INAPROPRIADA",
+  "controls": "COMANDOS",
+  "move": "MOVER",
+  "soft-drop": "QUEDA LENTA",
+  "hard-drop": "QUEDA RÁPIDA",
+  "rotate-right": "GIRAR DIREITA",
+  "rotate-left": "GIRAR ESQUERDA",
+  "hold": "RESERVAR",
+  "pause": "PAUSAR"
 }
