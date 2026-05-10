@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import Leaderboard from '../../../components/shared/Leaderboard';
+import ControlsLegend from '../../../components/shared/ControlsLegend';
 import HomeButton from '../../../components/shared/HomeButton';
 import RetroGrid from '../../../components/shared/RetroGrid';
 import isMobile from '../../../utils/isMobile';
@@ -214,6 +215,10 @@ export default function SnakeGame() {
         onPlayAgain={restart}
         visible={lbVisible}
       />
+      <ControlsLegend controls={[
+        ['WASD / ↑↓←→', 'Mover'],
+        ['R', 'Reiniciar'],
+      ]} />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import Leaderboard from '../../../components/shared/Leaderboard';
+import ControlsLegend from '../../../components/shared/ControlsLegend';
 import isMobile from '../../../utils/isMobile';
 import HomeButton from '../../../components/shared/HomeButton';
 import RetroGrid from '../../../components/shared/RetroGrid';
@@ -312,6 +313,11 @@ export default function InfinityRunGame() {
         onPlayAgain={restart}
         visible={lbVisible}
       />
+      <ControlsLegend controls={[
+        ['SPACE / ↑', 'Pular (2×)'],
+        ['↓ / S', 'Agachar'],
+        ['R', 'Reiniciar'],
+      ]} />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import Leaderboard from '../../../components/shared/Leaderboard';
+import ControlsLegend from '../../../components/shared/ControlsLegend';
 import HomeButton from '../../../components/shared/HomeButton';
 import RetroGrid from '../../../components/shared/RetroGrid';
 import isMobile from '../../../utils/isMobile';
@@ -175,6 +176,9 @@ export default function PacmanGame() {
         {isMobile && <div style={{ marginTop: 20 }}><PacmanMobileControls onDirectionChange={changeDirection} /></div>}
       </div>
       <Leaderboard apiUrl={`${process.env.REACT_APP_SERVER_URL}/leaderboard/pacman`} score={ui.score} sessionToken={sessionToken} onPlayAgain={restart} visible={lbVisible} />
+      <ControlsLegend controls={[
+        ['WASD / ↑↓←→', 'Mover'],
+      ]} />
     </div>
   );
 }
