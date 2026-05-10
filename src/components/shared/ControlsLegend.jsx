@@ -1,12 +1,17 @@
+import { useTranslation } from 'react-i18next';
 import isMobile from '../../utils/isMobile';
 
 /**
  * Reusable bottom-left controls legend panel (desktop only).
  * Props:
- *   controls – Array of [key, label] pairs
+ *   controls – Array of [key, translationKey] pairs
+ *              where translationKey is looked up via i18n.
+ *              Pass a plain string prefixed with '!' to skip translation.
  */
 export default function ControlsLegend({ controls }) {
+  const { t } = useTranslation();
   if (isMobile) return null;
+
   return (
     <div style={{
       position: 'fixed', left: 24, bottom: 24, zIndex: 20,
@@ -15,24 +20,28 @@ export default function ControlsLegend({ controls }) {
       borderRadius: 6, padding: '16px',
       backdropFilter: 'blur(10px)',
       boxShadow: '0 0 20px rgba(0,0,0,0.5)',
-      width: 190,
+      width: 200,
       animation: 'spFadeUp 0.6s 0.5s both',
     }}>
       <div style={{
         fontFamily: "'Orbitron', sans-serif", fontSize: 11, fontWeight: 'bold',
         color: '#ff2d78', marginBottom: 14, textAlign: 'center',
         letterSpacing: '0.2em', textShadow: '0 0 10px #ff2d7888',
-      }}>CONTROLS</div>
+      }}>{t('controls')}</div>
 
-      {controls.map(([key, label]) => (
-        <div key={key + label} style={{
+      {controls.map(([keyLabel, labelKey]) => (
+        <div key={keyLabel + labelKey} style={{
           display: 'flex', justifyContent: 'space-between', gap: 12,
           marginBottom: 8, fontSize: 11,
           fontFamily: "'Orbitron', sans-serif",
           color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em',
         }}>
-          <span style={{ color: '#00e5ff', fontWeight: 'bold', textShadow: '0 0 8px #00e5ff88', whiteSpace: 'nowrap' }}>{key}</span>
-          <span style={{ textAlign: 'right' }}>{label}</span>
+          <span style={{ color: '#00e5ff', fontWeight: 'bold', textShadow: '0 0 8px #00e5ff88', whiteSpace: 'nowrap' }}>
+            {keyLabel}
+          </span>
+          <span style={{ textAlign: 'right' }}>
+            {labelKey.startsWith('!') ? labelKey.slice(1) : t(labelKey)}
+          </span>
         </div>
       ))}
     </div>

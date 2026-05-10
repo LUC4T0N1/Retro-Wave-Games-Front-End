@@ -300,10 +300,6 @@ export default function InfinityRunGame() {
           <canvas ref={canvasRef} width={LW} height={LH} style={{ display: 'block', width: DW, height: DH }} />
         </div>
 
-        {/* Controls */}
-        <div style={{ fontFamily: "'VT323', monospace", fontSize: 14, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-          {isMobile ? 'TAP TOP - JUMP • TAP BOTTOM - DUCK' : 'SPACE / ↑ - JUMP (2×) • ↓ - DUCK'}
-        </div>
       </div>
 
       <Leaderboard
@@ -314,9 +310,8 @@ export default function InfinityRunGame() {
         visible={lbVisible}
       />
       <ControlsLegend controls={[
-        ['SPACE / ↑', 'Pular (2×)'],
-        ['↓ / S', 'Agachar'],
-        ['R', 'Reiniciar'],
+        ['SPACE / ↑', 'jump'],
+        ['↓ / S', 'duck'],
       ]} />
     </div>
   );

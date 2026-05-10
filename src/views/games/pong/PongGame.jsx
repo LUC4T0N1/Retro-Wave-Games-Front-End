@@ -115,14 +115,12 @@ export default function PongGame() {
         </div>
 
         <div style={{ border: '2px solid rgba(180,0,255,0.38)', borderRadius: 4, boxShadow: '0 0 36px rgba(180,0,255,0.20), 0 0 72px rgba(100,0,255,0.10), inset 0 0 28px rgba(0,0,40,0.88)', overflow: 'hidden' }}><canvas ref={canvasRef} width={LW} height={LH} style={{ display: 'block', width: DW, height: DH }} /></div>
-        <div style={{ fontFamily: "'VT323', monospace", fontSize: 14, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.22em', textTransform: 'uppercase' }}>{isLocal ? 'W / S — P1   •   ↑ / ↓ — P2' : (isMobile ? 'DRAG TO MOVE PADDLE' : 'W / ↑ — UP   •   S / ↓ — DOWN')}</div>
       </div>
       <ControlsLegend controls={isLocal ? [
-        ['W / S', 'Player 1'],
-        ['↑ / ↓', 'Player 2'],
+        ['W / S', 'player-1'],
+        ['↑ / ↓', 'player-2'],
       ] : [
-        ['W / S / ↑ / ↓', 'Mover'],
-        ['SPACE', 'Reiniciar'],
+        ['W / S / ↑ / ↓', 'move-paddle'],
       ]} />
     </div>
   );

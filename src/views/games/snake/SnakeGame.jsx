@@ -203,9 +203,6 @@ export default function SnakeGame() {
         <div style={{ border: '2px solid rgba(0,255,180,0.30)', borderRadius: 4, boxShadow: '0 0 32px rgba(0,255,160,0.16), inset 0 0 24px rgba(0,0,40,0.85)', overflow: 'hidden' }}>
           <canvas ref={canvasRef} width={CW} height={CH} style={{ display: 'block' }} />
         </div>
-        <div style={{ fontFamily: "'VT323', monospace", fontSize: 14, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-          {isMobile ? '' : 'WASD / ARROW KEYS'}
-        </div>
         {isMobile && <SnakeMobileControls onDirectionChange={changeDirection} />}
       </div>
       <Leaderboard
@@ -216,8 +213,7 @@ export default function SnakeGame() {
         visible={lbVisible}
       />
       <ControlsLegend controls={[
-        ['WASD / ↑↓←→', 'Mover'],
-        ['R', 'Reiniciar'],
+        ['WASD / ↑↓←→', 'move'],
       ]} />
     </div>
   );

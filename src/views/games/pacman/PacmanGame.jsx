@@ -172,12 +172,11 @@ export default function PacmanGame() {
           </div>
         </div>
         <div style={{ border: '2px solid rgba(0,180,255,0.4)', borderRadius: 4, boxShadow: '0 0 32px rgba(0,100,255,0.28), inset 0 0 24px rgba(0,0,40,0.85)', overflow: 'hidden' }}><canvas ref={canvasRef} width={CW} height={CH} style={{ display: 'block' }} /></div>
-        <div style={{ fontFamily: "'VT323', monospace", fontSize: 14, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>{isMobile ? 'SWIPE TO MOVE' : 'WASD / ARROW KEYS'}</div>
         {isMobile && <div style={{ marginTop: 20 }}><PacmanMobileControls onDirectionChange={changeDirection} /></div>}
       </div>
       <Leaderboard apiUrl={`${process.env.REACT_APP_SERVER_URL}/leaderboard/pacman`} score={ui.score} sessionToken={sessionToken} onPlayAgain={restart} visible={lbVisible} />
       <ControlsLegend controls={[
-        ['WASD / ↑↓←→', 'Mover'],
+        ['WASD / ↑↓←→', 'move'],
       ]} />
     </div>
   );
