@@ -7,7 +7,7 @@ import PacmanMobileControls from './PacmanMobileControls';
 import { usePacman } from '../../../controllers/pacman/usePacman';
 import { 
   COLS, ROWS, EXIT_COL, EXIT_ROW, 
-  wrapX, canMove, lp, levelConfig 
+  wrapX, canMove, lp, levelConfig, saveBest 
 } from '../../../models/pacman/pacmanModel';
 
 export default function PacmanGame() {
@@ -81,11 +81,20 @@ export default function PacmanGame() {
       }
       g.moveAccum += dt; if (g.moveAccum < s.ghostSpeed) return;
       g.lastMoveSpeed = s.ghostSpeed; g.prevX = g.x; g.prevY = g.y; g.moveAccum = 0;
-      const valid = ALL.filter(([dx,dy]) => `${dx},${dy}` !== OPP[`${g.dx},${g.dy}`] && canMove(maze, g.x, g.y, dx, dy));
-      const best = (valid.length ? valid : ALL.filter(([dx,dy]) => canMove(maze, g.x, g.y, dx, dy))).reduce((b, d) => {
-        const dist = (wrapX(g.x + d[0]) - pm.x) ** 2 + (g.y + d[1] - pm.y) ** 2, bdist = (wrapX(g.x + b[0]) - pm.x) ** 2 + (g.y + b[1] - pm.y) ** 2;
-        return dist < bdist ? d : b;
-      }, [0,0]);
+      const valid = ALL.filter(([dx, dy]) => `${dx},${dy}` !== OPP[`${g.dx},${g.dy}`] && canMove(maze, g.x, g.y, dx, dy));
+      const candidates = valid.length ? valid : ALL.filter(([dx, dy]) => canMove(maze, g.x, g.y, dx, dy));
+      if (!candidates.length) return;
+
+      const scored = candidates.map(d => {
+        const nx = wrapX(g.x + d[0]), ny = g.y + d[1];
+        let dx = Math.abs(nx - pm.x), dy = Math.abs(ny - pm.y);
+        if (dx > COLS / 2) dx = COLS - dx;
+        return { d, dist: dx * dx + dy * dy };
+      });
+      const minDist = Math.min(...scored.map(s => s.dist));
+      const bestOnes = scored.filter(s => s.dist === minDist).map(s => s.d);
+      const best = bestOnes[Math.floor(Math.random() * bestOnes.length)];
+
       g.dx = best[0]; g.dy = best[1]; g.x = wrapX(g.x + g.dx); g.y = Math.max(0, Math.min(ROWS - 1, g.y + g.dy));
     }
 
@@ -130,7 +139,10 @@ export default function PacmanGame() {
       const dt = Math.min(0.05, (ts - lastTRef.current) / 1000); lastTRef.current = ts;
       const s = stateRef.current; if (!s) { animRef.current = requestAnimationFrame(tick); return; }
       if (s.status === 'levelComplete') { s.levelCompleteTimer += dt; if (s.levelCompleteTimer >= 2.5) { const lvl = s.level + 1; stateRef.current = initState(lvl, s.score, s.lives); setUi(u => ({ ...u, level: lvl, status: 'playing' })); } draw(s, ts); animRef.current = requestAnimationFrame(tick); return; }
-      if (s.status === 'dead') { draw(s, ts); animRef.current = requestAnimationFrame(tick); return; }
+      if (s.status === 'dead') {
+        saveBest(s.score);
+        draw(s, ts); animRef.current = requestAnimationFrame(tick); return;
+      }
       if (s.deathAnimating) { s.deathAnim += dt * 1.8; if (s.deathAnim >= 1) { s.deathAnimating = false; s.deathAnim = 0; if (s.lives <= 0) { s.status = 'dead'; setUi(u => ({ ...u, status: 'dead' })); } else resetPositions(s); } draw(s, ts); animRef.current = requestAnimationFrame(tick); return; }
       const pm = s.pacman; pm.animT += dt;
       if (pm.nextDx === -pm.dx && pm.nextDy === -pm.dy && (pm.dx !== 0 || pm.dy !== 0)) { pm.dx = pm.nextDx; pm.dy = pm.nextDy; const tx = pm.x, ty = pm.y; pm.x = pm.prevX; pm.y = pm.prevY; pm.prevX = tx; pm.prevY = ty; pm.moveAccum = Math.max(0, s.pacSpeed - pm.moveAccum); }
@@ -153,7 +165,10 @@ export default function PacmanGame() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: CW, fontFamily: "'Orbitron', sans-serif", fontSize: isMobile ? 11 : 13, color: '#fff', letterSpacing: '0.08em', padding: '0 4px', boxSizing: 'border-box' }}>
           <div><span style={{ color: '#ffe066', textShadow: '0 0 10px #ffcc00' }}>SCORE </span><span>{ui.score}</span></div>
           <div style={{ color: '#cc00ff', textShadow: '0 0 10px #cc00ff' }}>LVL {ui.level}</div>
-          <div style={{ color: '#ff2d78', textShadow: '0 0 8px #ff2d78' }}>{'♥'.repeat(Math.max(0, ui.lives))}</div>
+          <div style={{ display: 'flex', gap: 15, alignItems: 'center' }}>
+            <div style={{ color: '#00ffcc', textShadow: '0 0 8px #00ffcc' }}>BEST {ui.best}</div>
+            <div style={{ color: '#ff2d78', textShadow: '0 0 8px #ff2d78' }}>{'♥'.repeat(Math.max(0, ui.lives))}</div>
+          </div>
         </div>
         <div style={{ border: '2px solid rgba(0,180,255,0.4)', borderRadius: 4, boxShadow: '0 0 32px rgba(0,100,255,0.28), inset 0 0 24px rgba(0,0,40,0.85)', overflow: 'hidden' }}><canvas ref={canvasRef} width={CW} height={CH} style={{ display: 'block' }} /></div>
         <div style={{ fontFamily: "'VT323', monospace", fontSize: 14, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>{isMobile ? 'SWIPE TO MOVE' : 'WASD / ARROW KEYS'}</div>

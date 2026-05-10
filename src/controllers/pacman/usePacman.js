@@ -1,11 +1,11 @@
 import { useState, useRef, useCallback } from 'react';
 import { 
-  levelConfig, buildMaze, countDots, GHOST_COLORS, EXIT_COL, EXIT_ROW 
+  levelConfig, buildMaze, countDots, GHOST_COLORS, EXIT_COL, EXIT_ROW, getBest 
 } from '../../models/pacman/pacmanModel';
 
 export function usePacman() {
   const stateRef = useRef(null);
-  const [ui, setUi] = useState({ score: 0, lives: 3, level: 1, status: 'playing' });
+  const [ui, setUi] = useState({ score: 0, lives: 3, level: 1, best: getBest(), status: 'playing' });
   const [lbVisible, setLbVisible] = useState(false);
   const [sessionToken, setSessionToken] = useState(null);
 
@@ -61,7 +61,7 @@ export function usePacman() {
 
   const restart = useCallback(() => {
     stateRef.current = initState(1);
-    setUi({ score: 0, lives: 3, level: 1, status: 'playing' });
+    setUi({ score: 0, lives: 3, level: 1, best: getBest(), status: 'playing' });
     setLbVisible(false);
     requestSession();
   }, [initState, requestSession]);

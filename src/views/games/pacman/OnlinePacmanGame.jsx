@@ -373,12 +373,18 @@ function OnlinePacmanGame({ socket, room, opponentName }) {
         `${dx},${dy}` !== OPP[curKey] && canMove(maze, g.x, g.y, dx, dy));
       if (!valid.length) valid = ALL.filter(([dx, dy]) => canMove(maze, g.x, g.y, dx, dy));
       if (!valid.length) return;
+
       const tx = pm.x, ty = pm.y;
-      const best = valid.reduce((b, d) => {
-        const dist  = (wrapX(g.x + d[0]) - tx) ** 2 + (g.y + d[1] - ty) ** 2;
-        const bdist = (wrapX(g.x + b[0]) - tx) ** 2 + (g.y + b[1] - ty) ** 2;
-        return dist < bdist ? d : b;
+      const scored = valid.map(d => {
+        const nx = wrapX(g.x + d[0]), ny = g.y + d[1];
+        let dx = Math.abs(nx - tx), dy = Math.abs(ny - ty);
+        if (dx > COLS / 2) dx = COLS - dx;
+        return { d, dist: dx * dx + dy * dy };
       });
+      const minDist = Math.min(...scored.map(s => s.dist));
+      const bestOnes = scored.filter(s => s.dist === minDist).map(s => s.d);
+      const best = bestOnes[Math.floor(Math.random() * bestOnes.length)];
+
       g.dx = best[0]; g.dy = best[1];
       g.x = wrapX(g.x + g.dx);
       g.y = Math.max(0, Math.min(ROWS - 1, g.y + g.dy));

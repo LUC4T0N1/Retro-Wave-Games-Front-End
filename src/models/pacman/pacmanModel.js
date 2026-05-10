@@ -62,3 +62,13 @@ export function canMove(maze, x, y, dx, dy, allowDoor = false) {
   if (cell === 4 && !allowDoor) return false;
   return true;
 }
+export function getBest() {
+  try { return parseInt(localStorage.getItem('pacman-best') || '0', 10); } catch { return 0; }
+}
+
+export function saveBest(score) {
+  try {
+    const cur = getBest();
+    if (score > cur) localStorage.setItem('pacman-best', score.toString());
+  } catch {}
+}
