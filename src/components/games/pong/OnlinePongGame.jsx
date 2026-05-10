@@ -61,11 +61,12 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
   const animRef         = useRef(null);
   const lastTRef        = useRef(0);
   const inputRef        = useRef({ up: false, down: false, touchY: null });
-  const myReadyRef      = useRef(false);
-  const oppLeftRef      = useRef(false);
-  const remoteBallRef   = useRef(null);              // latest ball snapshot from server
-  const remoteOppPadRef = useRef(null);              // latest raw opponent paddle from server
-  const oppPadVisual    = useRef((LH - PAD_H) / 2); // smoothed opponent paddle for display
+  const myReadyRef        = useRef(false);
+  const oppLeftRef        = useRef(false);
+  const remoteBallRef     = useRef(null);              // latest ball snapshot from server
+  const remoteOppPadRef   = useRef(null);              // latest raw opponent paddle from server
+  const oppPadVisual      = useRef((LH - PAD_H) / 2); // smoothed opponent paddle for display
+  const lastPaddleEmitRef = useRef(0);                 // throttle pong-paddle to 30 Hz
 
   const scale = isMobile
     ? Math.min((window.innerWidth * 0.98) / LW, (window.innerHeight * 0.78) / LH)
@@ -274,7 +275,11 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
         if (inp.up)   s.myY = Math.max(0,          s.myY - PLAYER_SPD * dt60);
         if (inp.down) s.myY = Math.min(LH - PAD_H, s.myY + PLAYER_SPD * dt60);
       }
-      socket.emit('pong-paddle', { room, y: s.myY });
+      const now = performance.now();
+      if (now - lastPaddleEmitRef.current >= 33) {
+        socket.emit('pong-paddle', { room, y: s.myY });
+        lastPaddleEmitRef.current = now;
+      }
     }
 
     function update(dt, s) {
