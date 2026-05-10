@@ -110,6 +110,41 @@ export default function BreakoutGame() {
       <div style={{ display: 'flex', gap: 28, alignItems: 'center', padding: '8px 0 6px', marginTop: isMobile ? 45 : 0, position: 'relative', zIndex: 10 }}><span style={{ color: '#00ffcc', fontFamily: "'Courier New', monospace", fontSize: 15, textShadow: '0 0 8px #00ffcc' }}>SCORE {ui.score}</span><span style={{ color: '#cc00ff', fontFamily: "'Courier New', monospace", fontSize: 15, textShadow: '0 0 8px #cc00ff' }}>LV {ui.level}</span><span style={{ color: '#ff2d78', fontFamily: "'Courier New', monospace", fontSize: 18, textShadow: '0 0 10px #ff2d78', letterSpacing: 3 }}>{'♥'.repeat(ui.lives)}</span></div>
       <div style={{ position: 'relative', zIndex: 10, cursor: 'none' }}><canvas ref={canvasRef} onClick={() => !lbVisibleRef.current && launch()} onMouseMove={(e) => handleMove((e.clientX - canvasRef.current.getBoundingClientRect().left) / scaleRef.current)} onTouchMove={(e) => { e.preventDefault(); handleMove((e.touches[0].clientX - canvasRef.current.getBoundingClientRect().left) / scaleRef.current); }} onTouchStart={(e) => { handleMove((e.touches[0].clientX - canvasRef.current.getBoundingClientRect().left) / scaleRef.current); launch(); }} style={{ display: 'block', borderRadius: 12, touchAction: 'none' }} /></div>
       <Leaderboard apiUrl={`${process.env.REACT_APP_SERVER_URL}/leaderboard/breakout`} score={ui.score} sessionToken={sessionToken} onPlayAgain={startGame} visible={lbVisible} />
+
+      {!isMobile && (
+        <div style={{
+          position: 'fixed', left: 24, bottom: 24, zIndex: 20,
+          background: 'rgba(4, 0, 18, 0.75)',
+          border: '1px solid rgba(0, 229, 255, 0.3)',
+          borderRadius: 6, padding: '16px',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 0 20px rgba(0,0,0,0.5)',
+          width: 180,
+          animation: 'spFadeUp 0.6s 0.5s both',
+        }}>
+          <div style={{
+            fontFamily: "'Orbitron', sans-serif", fontSize: 11, fontWeight: 'bold',
+            color: '#ff2d78', marginBottom: 14, textAlign: 'center',
+            letterSpacing: '0.2em', textShadow: '0 0 10px #ff2d7888',
+          }}>CONTROLS</div>
+          {[
+            ['← / A', 'Mover esquerda'],
+            ['→ / D', 'Mover direita'],
+            ['CLICK', 'Lançar bola'],
+            ['SPACE', 'Lançar bola'],
+          ].map(([key, label]) => (
+            <div key={key} style={{
+              display: 'flex', justifyContent: 'space-between', gap: 12,
+              marginBottom: 8, fontSize: 11,
+              fontFamily: "'Orbitron', sans-serif",
+              color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em',
+            }}>
+              <span style={{ color: '#00e5ff', fontWeight: 'bold', textShadow: '0 0 8px #00e5ff88' }}>{key}</span>
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
