@@ -84,36 +84,35 @@ const OnlineGame = ({ socket, username, room, isOtherPlayerReady, setIsOtherPlay
     }
 
     useEffect(() => {
-      socket.on("player-ready", (data) => {
-        if(data.author !== username){
-          setIsOtherPlayerReady(true);
+      const onPlayerReady = (data) => {
+        if (data.author !== username) setIsOtherPlayerReady(true);
+      };
+      const onLetterSelected = (data) => {
+        if (data.letter === 'X') setXIsSelected({ selected: data.selected, player: data.player });
+        else setOIsSelected({ selected: data.selected, player: data.player });
+      };
+      const onGameMove = (data) => {
+        if (data.author !== username) {
+          setTurn(data.player === "X" ? "O" : "X");
+          setBoard(prev => prev.map((val, idx) => (idx === data.square && val === "") ? data.player : val));
         }
-      });
-      socket.on("letter_selected", (data) => {
-        if(data.letter === 'X'){
-          setXIsSelected({selected: data.selected, player: data.player});
-        }else{
-          setOIsSelected({selected: data.selected, player: data.player});
-        }
-      });
-      socket.on("game-move", (data) => {
-        if (data.username !== username) {
-          const currentPlayer = data.player === "X" ? "O" : "X";
-          setPlayer(currentPlayer);
-          setTurn(currentPlayer);
-          setBoard(
-            board.map((val, idx) => {
-              if (idx === data.square && val === "") {
-                return data.player;
-              }
-              return val;
-            })
-          );
-        }
-      });
-      checkIfTie({board, handleGameOver});
-      checkWin({board, handleGameOver});
-    }, [socket, xIsSelected, oIsSelected, board]); 
+      };
+
+      socket.on("player-ready", onPlayerReady);
+      socket.on("letter_selected", onLetterSelected);
+      socket.on("game-move", onGameMove);
+
+      return () => {
+        socket.off("player-ready", onPlayerReady);
+        socket.off("letter_selected", onLetterSelected);
+        socket.off("game-move", onGameMove);
+      };
+    }, [socket, username]);
+
+    useEffect(() => {
+      checkIfTie({ board, handleGameOver });
+      checkWin({ board, handleGameOver });
+    }, [board]);
   
 
 
