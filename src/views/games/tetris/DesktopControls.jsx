@@ -53,7 +53,6 @@ export default function DesktopControls({ t }) {
       <div style={controlStyle}><span style={keyStyle}>Z</span> <span>{t('rotate-left')}</span></div>
       <div style={controlStyle}><span style={keyStyle}>C / SHIFT</span> <span>{t('hold')}</span></div>
       <div style={controlStyle}><span style={keyStyle}>P / ESC</span> <span>{t('pause')}</span></div>
-      <div style={controlStyle}><span style={keyStyle}>R</span> <span>{t('restart')}</span></div>
     </div>
   );
 }
