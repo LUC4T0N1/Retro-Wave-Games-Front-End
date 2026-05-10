@@ -7,21 +7,8 @@
 }
 
 @keyframes glowPulse {
-  0%, 100% {
-    text-shadow: 0 0 10px #ff2d78, 0 0 28px #ff2d78, 0 0 55px #ff2d78, 0 0 90px #c200ff;
-  }
-  50% {
-    text-shadow: 0 0 6px #ff2d78, 0 0 16px #ff2d78, 0 0 35px #ff2d78, 0 0 60px #c200ff;
-  }
-}
-
-@keyframes neonBorder {
-  0%, 100% {
-    box-shadow: 0 0 8px #00e5ff, 0 0 20px rgba(0,229,255,0.2), inset 0 0 8px rgba(0,229,255,0.094);
-  }
-  50% {
-    box-shadow: 0 0 16px #00e5ff, 0 0 36px rgba(0,229,255,0.333), inset 0 0 14px rgba(0,229,255,0.157);
-  }
+  0%, 100% { filter: drop-shadow(0 0 8px #ff2d78) drop-shadow(0 0 22px #c200ff55); }
+  50%       { filter: drop-shadow(0 0 4px #ff2d78bb) drop-shadow(0 0 12px #c200ff33); }
 }
 
 @keyframes fadeUp {
@@ -35,8 +22,8 @@
 }
 
 @keyframes logoIn {
-  0%   { opacity: 0; letter-spacing: 0.55em; transform: scale(0.88); }
-  100% { opacity: 1; letter-spacing: 0.12em; transform: scale(1); }
+  0%   { opacity: 0; transform: scale(0.88); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 @keyframes floatBob {

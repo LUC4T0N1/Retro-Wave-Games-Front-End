@@ -490,7 +490,6 @@ function Home({ socket }) {
           borderRadius: 6, padding: '24px 28px 20px',
           backdropFilter: isMobile ? 'none' : 'blur(16px)',
           boxShadow: '0 0 40px rgba(180,0,255,0.18), 0 0 80px rgba(100,0,255,0.08), inset 0 0 40px rgba(100,0,255,0.04)',
-          animation: isMobile ? 'none' : 'neonBorder 3.5s ease-in-out infinite',
         }}>
           {screen === 'games' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'fadeUp 0.5s both' }}>
