@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import OnlineGame from "../../game-logic/OnlineGame";
-import { containsProfanity } from '../../../../../../utils/profanity';
-import JoinForm from "./join-friend-form/JoinFriendForm";
-import "../RoomCreation.css";
+import OnlineGame from "../multiplayer/online/game-logic/OnlineGame";
+import { containsProfanity } from '../../../utils/profanity';
+import JoinForm from "../multiplayer/online/room-creation/friend/join-friend-form/JoinFriendForm";
+import "../multiplayer/online/room-creation/RoomCreation.css";
 import { useTranslation } from 'react-i18next';
-import HomeButton from '../../../../../ui/HomeButton';
-import RetroGrid from '../../../../../ui/RetroGrid';
+import HomeButton from '../../ui/HomeButton';
+import RetroGrid from '../../ui/RetroGrid';
 
-function RoomSelection({ socket }) {
+function TicTacToeFriendLobby({ socket }) {
   const { t } = useTranslation();
   const [username, setUsername] = useState("");
   const [room, setRoom] = useState("");
@@ -119,4 +118,4 @@ function RoomSelection({ socket }) {
   );
 }
 
-export default RoomSelection;
+export default TicTacToeFriendLobby;

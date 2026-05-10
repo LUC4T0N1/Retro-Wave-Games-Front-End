@@ -4,10 +4,10 @@ import Home from "./components/home/Home";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 const Error = lazy(() => import("./components/error/Error"));
-const RoomSelection = lazy(() => import("./components/games/multiplayer/online/room-creation/friend/RoomSelection"));
-const GameLocalMultiplayer = lazy(() => import("./components/games/multiplayer/local/GameLocalMultiplayer"));
-const SinglePlayerGame = lazy(() => import("./components/games/singleplayer/SinglePlayerGame"));
-const Queue = lazy(() => import("./components/games/multiplayer/online/room-creation/random/Queue"));
+const TicTacToeGame        = lazy(() => import("./components/games/tictactoe/TicTacToeGame"));
+const TicTacToeLocalGame   = lazy(() => import("./components/games/tictactoe/TicTacToeLocalGame"));
+const TicTacToeFriendLobby = lazy(() => import("./components/games/tictactoe/TicTacToeFriendLobby"));
+const TicTacToeRandomQueue = lazy(() => import("./components/games/tictactoe/TicTacToeRandomQueue"));
 const PacmanGame        = lazy(() => import("./components/games/pacman/PacmanGame"));
 const PacmanFriendLobby = lazy(() => import("./components/games/pacman/PacmanFriendLobby"));
 const PacmanRandomQueue = lazy(() => import("./components/games/pacman/PacmanRandomQueue"));
@@ -38,12 +38,12 @@ function App({ socket }) {
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             <Route path="/" element={<Home socket={socket} />} />
-            <Route path="/singleplayer/easy" element={<SinglePlayerGame ai_type={2} />} />
-            <Route path="/singleplayer/hard" element={<SinglePlayerGame ai_type={1} />} />
-            <Route path="/singleplayer/random-ia" element={<SinglePlayerGame ai_type={3} />} />
-            <Route path="/multiplayer/local" element={<GameLocalMultiplayer />} />
-            <Route path="/multiplayer/friendly" element={<RoomSelection socket={socket} />} />
-            <Route path="/multiplayer/random" element={<Queue socket={socket} />} />
+            <Route path="/tic-tac-toe/easy" element={<TicTacToeGame ai_type={2} />} />
+            <Route path="/tic-tac-toe/hard" element={<TicTacToeGame ai_type={1} />} />
+            <Route path="/tic-tac-toe/random-ia" element={<TicTacToeGame ai_type={3} />} />
+            <Route path="/tic-tac-toe/local" element={<TicTacToeLocalGame />} />
+            <Route path="/tic-tac-toe/friend" element={<TicTacToeFriendLobby socket={socket} />} />
+            <Route path="/tic-tac-toe/random" element={<TicTacToeRandomQueue socket={socket} />} />
             <Route path="/pacman"        element={<PacmanGame />} />
             <Route path="/pacman/friend" element={<PacmanFriendLobby socket={socket} />} />
             <Route path="/pacman/random" element={<PacmanRandomQueue socket={socket} />} />

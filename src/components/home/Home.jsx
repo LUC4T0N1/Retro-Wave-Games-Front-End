@@ -538,9 +538,9 @@ function Home({ socket }) {
           {screen === 'multi' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 13, animation: 'fadeUp 0.4s both' }}>
               <div style={subLabelStyle('#ff2d78')}>{t('choose-mode')}</div>
-              <NeonButton color="#ff2d78" to="/multiplayer/local" delay={0}>{t('local')}</NeonButton>
-              <NeonButton color="#ff2d78" to="/multiplayer/friendly" delay={0.07}>{t('friend')}</NeonButton>
-              <NeonButton color="#ff2d78" to="/multiplayer/random" delay={0.14}>{t('random-opponent')}</NeonButton>
+              <NeonButton color="#ff2d78" to="/tic-tac-toe/local" delay={0}>{t('local')}</NeonButton>
+              <NeonButton color="#ff2d78" to="/tic-tac-toe/friend" delay={0.07}>{t('friend')}</NeonButton>
+              <NeonButton color="#ff2d78" to="/tic-tac-toe/random" delay={0.14}>{t('random-opponent')}</NeonButton>
               <button
                 onClick={() => setScreen('home')}
                 style={backBtnStyle}
@@ -755,9 +755,9 @@ function Home({ socket }) {
           {screen === 'single' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 13, animation: 'fadeUp 0.4s both' }}>
               <div style={subLabelStyle('#00e5ff')}>{t('choose-diff')}</div>
-              <NeonButton color="#00e5ff" to="/singleplayer/easy" delay={0}>{t('easy')}</NeonButton>
-              <NeonButton color="#00e5ff" to="/singleplayer/random-ia" delay={0.07}>{t('random')}</NeonButton>
-              <NeonButton color="#00e5ff" to="/singleplayer/hard" delay={0.14}>{t('hard')}</NeonButton>
+              <NeonButton color="#00e5ff" to="/tic-tac-toe/easy" delay={0}>{t('easy')}</NeonButton>
+              <NeonButton color="#00e5ff" to="/tic-tac-toe/random-ia" delay={0.07}>{t('random')}</NeonButton>
+              <NeonButton color="#00e5ff" to="/tic-tac-toe/hard" delay={0.14}>{t('hard')}</NeonButton>
               <button
                 onClick={() => setScreen('home')}
                 style={backBtnStyle}

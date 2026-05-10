@@ -3,7 +3,7 @@ import {checkIfTie, checkWin} from  "../../../utils/EndGame";
 import {findBestMove, findWorstMove, findRandomMove} from  "../../../utils/AILogic";
 import SinglePlayerScreen from "../../game/SinglePlayerScreen";
 
-function SinglePlayerGame({ai_type}) {
+function TicTacToeGame({ai_type}) {
   const [board, setBoard] = useState(["","","","","","","","",""])
   const [player, setPlayer] = useState("X");
   const [turn, setTurn] = useState("X");
@@ -23,7 +23,7 @@ function SinglePlayerGame({ai_type}) {
     if(turn === "O" && win !== true){
       handleAITurn();
     }
-}, [board]); 
+}, [board]);
 
 const handleRestart = () => {
   setBoard(["","","","","","","","",""]);
@@ -43,15 +43,15 @@ const handleAITurn = async () => {
         square = findRandomMove({board});
       }
       const currentPlayer = player === "O" ? "X" : "O";
-      setPlayer(currentPlayer); 
+      setPlayer(currentPlayer);
       setBoard(
       board.map((val, idx) => {
           if (idx === square && val === "") {
           return player;
         }
-        return val; 
+        return val;
       })
-      );   
+      );
       setTurn("X")
     }
 }
@@ -70,13 +70,13 @@ const handleAITurn = async () => {
           return val;
         })
       );
-  
+
     }
   };
- 
+
   return (
    <SinglePlayerScreen result={result} chooseSquare={chooseSquare} handleRestart={handleRestart} board={board}/>
   )
 }
 
-export default SinglePlayerGame
+export default TicTacToeGame

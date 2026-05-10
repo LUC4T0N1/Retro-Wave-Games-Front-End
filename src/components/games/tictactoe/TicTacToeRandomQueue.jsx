@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import OnlineGame from "../../game-logic/OnlineGame";
-import { containsProfanity } from '../../../../../../utils/profanity';
-import JoinQueueForm from "./join-queue-form/JoinQueueForm";
-import "../RoomCreation.css";
+import OnlineGame from "../multiplayer/online/game-logic/OnlineGame";
+import { containsProfanity } from '../../../utils/profanity';
+import JoinQueueForm from "../multiplayer/online/room-creation/random/join-queue-form/JoinQueueForm";
+import "../multiplayer/online/room-creation/RoomCreation.css";
 import { useTranslation } from 'react-i18next';
-import HomeButton from '../../../../../ui/HomeButton';
-import RetroGrid from '../../../../../ui/RetroGrid';
+import HomeButton from '../../ui/HomeButton';
+import RetroGrid from '../../ui/RetroGrid';
 
-function Queue({ socket }) {
+function TicTacToeRandomQueue({ socket }) {
   const { t } = useTranslation();
   const [username, setUsername] = useState("");
   const [room, setRoom] = useState("");
@@ -90,4 +89,4 @@ function Queue({ socket }) {
   );
 }
 
-export default Queue;
+export default TicTacToeRandomQueue;

@@ -1,8 +1,8 @@
 import React, {useEffect ,useState} from "react";
-import {checkIfTie, checkWin} from  "../../../../utils/EndGame";
-import SinglePlayerScreen from "../../../game/SinglePlayerScreen";
+import {checkIfTie, checkWin} from  "../../../utils/EndGame";
+import SinglePlayerScreen from "../../game/SinglePlayerScreen";
 
-const GameLocalMultiplayer = () => {
+const TicTacToeLocalGame = () => {
   const [board, setBoard] = useState(["","","","","","","","",""])
   const [player, setPlayer] = useState("X");
   const [result, setResult] = useState({ winner: "none", state: "none" });
@@ -14,7 +14,7 @@ const GameLocalMultiplayer = () => {
   useEffect(() => {
     checkIfTie({board, handleGameOver});
     checkWin({board, handleGameOver});
-}, [board]); 
+}, [board]);
 
 const handleRestart = () => {
   setBoard(["","","","","","","","",""]);
@@ -43,4 +43,4 @@ const handleRestart = () => {
   )
 }
 
-export default GameLocalMultiplayer
+export default TicTacToeLocalGame
