@@ -21,6 +21,9 @@ export default function TetrisGame() {
     initState, handleAction, lockAndNext, lastDropRef 
   } = useTetris();
 
+  const lbVisibleRef = useRef(false);
+  useEffect(() => { lbVisibleRef.current = lbVisible; }, [lbVisible]);
+
   const drawBlock = useCallback((ctx, px, py, color, cs, alpha = 1, ghost = false) => {
     ctx.save();
     ctx.globalAlpha = alpha;
@@ -190,7 +193,7 @@ export default function TetrisGame() {
     window.addEventListener('resize', onResize);
 
     const onKey = (e) => {
-      if (lbVisible) return;
+      if (lbVisibleRef.current) return;
       const s = stateRef.current;
       if (!s) return;
 
@@ -250,7 +253,7 @@ export default function TetrisGame() {
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('resize', onResize);
     };
-  }, [initState, handleAction, lockAndNext, dropInterval, render, lbVisible, stateRef, lastDropRef]);
+  }, [initState, handleAction, lockAndNext, dropInterval, render, stateRef, lastDropRef]);
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', background: '#000', position: 'relative' }}>

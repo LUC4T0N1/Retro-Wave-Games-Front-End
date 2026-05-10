@@ -17,9 +17,12 @@ export function useTetris() {
         method: 'POST',
       });
       const json = await res.json();
-      setSessionToken(json.sessionToken || null);
+      const token = json.sessionToken || null;
+      setSessionToken(token);
+      return token;
     } catch {
       setSessionToken(null);
+      return null;
     }
   }, []);
 
@@ -29,7 +32,7 @@ export function useTetris() {
     const currentKey = bag.pop();
     setScore(0);
     setLbVisible(false);
-    requestSession();
+    setSessionToken(null);
     
     const newState = {
       board: emptyBoard(),
@@ -68,8 +71,10 @@ export function useTetris() {
 
     if (!fits(clearedBoard, newCurrent.shape, newCurrent.x, newCurrent.y)) {
       s.board = clearedBoard;
+      s.score = newScore;
       s.status = 'over';
-      setLbVisible(true);
+      setScore(newScore);
+      requestSession().then(() => setLbVisible(true));
       return;
     }
 
@@ -102,7 +107,9 @@ export function useTetris() {
       s.bag = bag; s.nextBag = nextBag; s.next = afterNext;
     }
     if (!fits(s.board, newCurrent.shape, newCurrent.x, newCurrent.y)) {
-      s.status = 'over'; setLbVisible(true); return;
+      s.status = 'over';
+      requestSession().then(() => setLbVisible(true));
+      return;
     }
     s.hold = currentKey;
     s.current = newCurrent;
