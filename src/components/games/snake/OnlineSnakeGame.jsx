@@ -18,7 +18,7 @@ function randomFood(snake) {
 }
 
 function getMoveInterval(level) {
-  return Math.max(0.065, 0.19 - (level - 1) * 0.016);
+  return Math.max(0.075, 0.20 - (level - 1) * 0.014);
 }
 
 function makeMyState(level = 1, score = 0) {
