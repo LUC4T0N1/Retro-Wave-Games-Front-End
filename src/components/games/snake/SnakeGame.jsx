@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import Leaderboard from '../../ui/Leaderboard'; // Importado
-import isMobile from '../../../utils/isMobile';
 import HomeButton from '../../ui/HomeButton';
 import RetroGrid from '../../ui/RetroGrid';
+import isMobile from '../../../utils/isMobile';
+import SnakeMobileControls from './SnakeMobileControls';
 
 const COLS = 21;
 const ROWS = 21;
@@ -111,32 +112,36 @@ export default function SnakeGame() {
     restart();
   };
 
-  // ── Keyboard ──────────────────────────────────────────────────────────────
-  useEffect(() => {
+  const changeDirection = useCallback((key) => {
     const DIR = {
       ArrowUp: { dx: 0, dy: -1 }, ArrowDown: { dx: 0, dy: 1 },
       ArrowLeft: { dx: -1, dy: 0 }, ArrowRight: { dx: 1, dy: 0 },
       w: { dx: 0, dy: -1 }, s: { dx: 0, dy: 1 }, a: { dx: -1, dy: 0 }, d: { dx: 1, dy: 0 },
     };
+    const st = stateRef.current;
+    if (!st) return;
+    if (st.status === 'dead') {
+      if (!lbVisibleRef.current && (key === 'Enter' || key === ' ')) restart();
+      return;
+    }
+    const nd = DIR[key];
+    if (!nd) return;
+    const lastDir = (st.dirQueue && st.dirQueue.length > 0) ? st.dirQueue[st.dirQueue.length - 1] : st.dir;
+    if (!(nd.dx === -lastDir.dx && nd.dy === -lastDir.dy) && !(nd.dx === lastDir.dx && nd.dy === lastDir.dy)) {
+      if (!st.dirQueue) st.dirQueue = [];
+      if (st.dirQueue.length < 3) st.dirQueue.push(nd);
+    }
+  }, [restart]);
+
+  // ── Keyboard ──────────────────────────────────────────────────────────────
+  useEffect(() => {
     const onKey = (e) => {
-      const st = stateRef.current;
-      if (!st) return;
-      if (st.status === 'dead') {
-        if (!lbVisibleRef.current && (e.key === 'Enter' || e.key === ' ')) restart();
-        return;
-      }
-      const nd = DIR[e.key];
-      if (!nd) return;
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) e.preventDefault();
-      const lastDir = (st.dirQueue && st.dirQueue.length > 0) ? st.dirQueue[st.dirQueue.length - 1] : st.dir;
-      if (!(nd.dx === -lastDir.dx && nd.dy === -lastDir.dy) && !(nd.dx === lastDir.dx && nd.dy === lastDir.dy)) {
-        if (!st.dirQueue) st.dirQueue = [];
-        if (st.dirQueue.length < 3) st.dirQueue.push(nd);
-      }
+      changeDirection(e.key);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [restart]);
+  }, [changeDirection]);
 
   // ── Touch swipe ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -369,8 +374,9 @@ export default function SnakeGame() {
           fontFamily: "'VT323', monospace", fontSize: 14, color: 'rgba(255,255,255,0.28)',
           letterSpacing: '0.2em', textTransform: 'uppercase',
         }}>
-          {isMobile ? 'SWIPE TO MOVE' : 'WASD / ARROW KEYS'}
+          {isMobile ? '' : 'WASD / ARROW KEYS'}
         </div>
+        {isMobile && <SnakeMobileControls onDirectionChange={changeDirection} />}
       </div>
 
       <Leaderboard

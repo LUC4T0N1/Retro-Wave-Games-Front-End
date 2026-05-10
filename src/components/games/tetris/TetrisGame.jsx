@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Leaderboard from '../../ui/Leaderboard'; // Importado
 import HomeButton from '../../ui/HomeButton';
 import RetroGrid from '../../ui/RetroGrid';
+import isMobile from '../../../utils/isMobile';
+import TetrisMobileControls from './TetrisMobileControls';
 
 const COLS = 10;
 const ROWS = 20;
@@ -174,7 +176,8 @@ export default function TetrisGame() {
     if (!cv) return;
     const ctx = cv.getContext('2d');
     const W = cv.width, H = cv.height;
-    const cs = Math.floor(H / (ROWS + 2));
+    let cs = Math.floor(H / (ROWS + 2));
+    if (cs * 22 > W) cs = Math.floor(W / 22);
     const boardW = cs * COLS;
     const panelW = cs * 5;
     const totalW = boardW + panelW * 2;
@@ -404,6 +407,42 @@ export default function TetrisGame() {
     return s.softDrop ? Math.max(50, base / 8) : base;
   }, []);
 
+  const handleAction = useCallback((action) => {
+    const s = stateRef.current;
+    if (!s || s.status !== 'playing' || lbVisibleRef.current) return;
+
+    if (action === 'Left') {
+      if (fits(s.board, s.current.shape, s.current.x - 1, s.current.y)) s.current.x--;
+    } else if (action === 'Right') {
+      if (fits(s.board, s.current.shape, s.current.x + 1, s.current.y)) s.current.x++;
+    } else if (action === 'Rotate') {
+      const rot = rotate(s.current.shape);
+      const kicks = [0, -1, 1, -2, 2];
+      for (const k of kicks) {
+        if (fits(s.board, rot, s.current.x + k, s.current.y)) {
+          s.current.shape = rot; s.current.x += k; break;
+        }
+      }
+    } else if (action === 'HardDrop') {
+      const gy = ghostY(s.board, s.current.shape, s.current.x, s.current.y);
+      s.current.y = gy;
+      lockAndNext();
+      lastDropRef.current = performance.now();
+    } else if (action === 'Hold') {
+      doHold();
+    }
+  }, [lockAndNext, doHold]);
+
+  const handleSoftDropStart = useCallback(() => {
+    const s = stateRef.current;
+    if (s && s.status === 'playing') s.softDrop = true;
+  }, []);
+
+  const handleSoftDropEnd = useCallback(() => {
+    const s = stateRef.current;
+    if (s) s.softDrop = false;
+  }, []);
+
   useEffect(() => {
     stateRef.current = initState();
     lastDropRef.current = performance.now();
@@ -504,6 +543,14 @@ export default function TetrisGame() {
       <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
       <canvas ref={canvasRef} style={{ position: 'relative', zIndex: 10, display: 'block', width: '100%', height: '100%' }} />
       <HomeButton />
+
+      {isMobile && (
+        <TetrisMobileControls
+          onAction={handleAction}
+          onSoftDropStart={handleSoftDropStart}
+          onSoftDropEnd={handleSoftDropEnd}
+        />
+      )}
 
       <Leaderboard
         apiUrl={`${process.env.REACT_APP_SERVER_URL}/leaderboard/tetris`}

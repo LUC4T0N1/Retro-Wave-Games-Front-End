@@ -440,12 +440,12 @@ export default function BreakoutGame() {
     <div style={{ width: '100vw', minHeight: '100vh', background: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', overflow: 'hidden', position: 'relative' }}>
       <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
 
-      <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '14px 24px 0', boxSizing: 'border-box', position: 'relative', zIndex: 10 }}>
-        <HomeButton />
+      <HomeButton />
+      <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '21px 24px 0', boxSizing: 'border-box', position: 'relative', zIndex: 10 }}>
         <span style={{ color: '#ff2d78', fontFamily: "'Courier New', monospace", fontSize: 14, letterSpacing: 1, textShadow: '0 0 8px #ff2d78' }}>BEST {getBest()}</span>
       </div>
 
-      <div style={{ display: 'flex', gap: 28, alignItems: 'center', padding: '8px 0 6px', position: 'relative', zIndex: 10 }}>
+      <div style={{ display: 'flex', gap: 28, alignItems: 'center', padding: '8px 0 6px', marginTop: isMobile ? 45 : 0, position: 'relative', zIndex: 10 }}>
         <span style={{ color: '#00ffcc', fontFamily: "'Courier New', monospace", fontSize: 15, textShadow: '0 0 8px #00ffcc' }}>SCORE {s.score}</span>
         <span style={{ color: '#cc00ff', fontFamily: "'Courier New', monospace", fontSize: 15, textShadow: '0 0 8px #cc00ff' }}>LV {s.level}</span>
         <span style={{ color: '#ff2d78', fontFamily: "'Courier New', monospace", fontSize: 18, textShadow: '0 0 10px #ff2d78', letterSpacing: 3 }}>{hearts.join(' ')}</span>

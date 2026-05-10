@@ -3,6 +3,8 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 
 import HomeButton from '../../ui/HomeButton';
 import RetroGrid from '../../ui/RetroGrid';
+import isMobile from '../../../utils/isMobile';
+import TetrisMobileControls from './TetrisMobileControls';
 
 const COLS = 10;
 const ROWS = 20;
@@ -158,7 +160,7 @@ export default function OnlineTetrisGame({ socket, room, opponentName }) {
     const ctx = cv.getContext('2d');
     const W = cv.width, H = cv.height;
 
-    const cs = Math.max(14, Math.min(26, Math.floor(Math.min((W - 80) / 36, (H - 60) / 22))));
+    const cs = Math.max(8, Math.floor(Math.min((W - 20) / 34, (H - 60) / 22)));
     const boardH = cs * ROWS;
     const boardW = cs * COLS;
     const holdW  = cs * 5;
@@ -540,6 +542,41 @@ export default function OnlineTetrisGame({ socket, room, opponentName }) {
     }
   }, [socket, room, doRestart]);
 
+  const handleAction = useCallback((action) => {
+    const s = myStateRef.current;
+    if (!s || s.status !== 'playing' || resultRef.current) return;
+
+    if (action === 'Left') {
+      if (fits(s.board, s.current.shape, s.current.x - 1, s.current.y)) s.current.x--;
+    } else if (action === 'Right') {
+      if (fits(s.board, s.current.shape, s.current.x + 1, s.current.y)) s.current.x++;
+    } else if (action === 'Rotate') {
+      const rot = rotate(s.current.shape);
+      const kicks = [0, -1, 1, -2, 2];
+      for (const k of kicks) {
+        if (fits(s.board, rot, s.current.x + k, s.current.y)) {
+          s.current.shape = rot; s.current.x += k; break;
+        }
+      }
+    } else if (action === 'HardDrop') {
+      s.current.y = ghostY(s.board, s.current.shape, s.current.x, s.current.y);
+      lockAndNext();
+      lastDropRef.current = performance.now();
+    } else if (action === 'Hold') {
+      doHold();
+    }
+  }, [lockAndNext, doHold]);
+
+  const handleSoftDropStart = useCallback(() => {
+    const s = myStateRef.current;
+    if (s && s.status === 'playing') s.softDrop = true;
+  }, []);
+
+  const handleSoftDropEnd = useCallback(() => {
+    const s = myStateRef.current;
+    if (s) s.softDrop = false;
+  }, []);
+
   // ── Effect: mount / unmount ────────────────────────────────────────────────
   useEffect(() => {
     myStateRef.current  = makeMyState();
@@ -678,6 +715,14 @@ export default function OnlineTetrisGame({ socket, room, opponentName }) {
       <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
       <canvas ref={canvasRef} style={{ position: 'relative', zIndex: 10, display: 'block', width: '100%', height: '100%' }} />
       <HomeButton />
+
+      {isMobile && !result && (
+        <TetrisMobileControls
+          onAction={handleAction}
+          onSoftDropStart={handleSoftDropStart}
+          onSoftDropEnd={handleSoftDropEnd}
+        />
+      )}
 
       {result && (
         <div style={{

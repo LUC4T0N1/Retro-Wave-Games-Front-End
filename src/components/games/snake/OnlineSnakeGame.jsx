@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import HomeButton from '../../ui/HomeButton';
 import RetroGrid from '../../ui/RetroGrid';
 import isMobile from '../../../utils/isMobile';
+import SnakeMobileControls from './SnakeMobileControls';
 
 const COLS = 21;
 const ROWS = 21;
@@ -276,6 +277,26 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
   }, [socket, room, doRestart]);
 
   // ── Effect: mount / unmount ────────────────────────────────────────────────
+  const changeDirection = useCallback((key) => {
+    if (resultRef.current) return;
+    const s = myStateRef.current;
+    if (!s || s.status !== 'playing') return;
+
+    const DIR = {
+      ArrowUp: { dx: 0, dy: -1 }, ArrowDown: { dx: 0, dy: 1 },
+      ArrowLeft: { dx: -1, dy: 0 }, ArrowRight: { dx: 1, dy: 0 },
+      w: { dx: 0, dy: -1 }, s: { dx: 0, dy: 1 }, a: { dx: -1, dy: 0 }, d: { dx: 1, dy: 0 },
+    };
+
+    const nd = DIR[key];
+    if (!nd) return;
+    const lastDir = (s.dirQueue && s.dirQueue.length > 0) ? s.dirQueue[s.dirQueue.length - 1] : s.dir;
+    if (!(nd.dx === -lastDir.dx && nd.dy === -lastDir.dy) && !(nd.dx === lastDir.dx && nd.dy === lastDir.dy)) {
+      if (!s.dirQueue) s.dirQueue = [];
+      if (s.dirQueue.length < 3) s.dirQueue.push(nd);
+    }
+  }, []);
+
   useEffect(() => {
     myStateRef.current  = makeMyState();
     oppStateRef.current = makeOppState();
@@ -336,24 +357,9 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
     socket.on('snake-restart-ready', onRestartReady);
 
     // Key handlers
-    const DIR = {
-      ArrowUp: { dx: 0, dy: -1 }, ArrowDown: { dx: 0, dy: 1 },
-      ArrowLeft: { dx: -1, dy: 0 }, ArrowRight: { dx: 1, dy: 0 },
-      w: { dx: 0, dy: -1 }, s: { dx: 0, dy: 1 }, a: { dx: -1, dy: 0 }, d: { dx: 1, dy: 0 },
-    };
     const onKey = (e) => {
-      if (resultRef.current) return;
-      const s = myStateRef.current;
-      if (!s || s.status !== 'playing') return;
-
-      const nd = DIR[e.key];
-      if (!nd) return;
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) e.preventDefault();
-      const lastDir = (s.dirQueue && s.dirQueue.length > 0) ? s.dirQueue[s.dirQueue.length - 1] : s.dir;
-      if (!(nd.dx === -lastDir.dx && nd.dy === -lastDir.dy) && !(nd.dx === lastDir.dx && nd.dy === lastDir.dy)) {
-        if (!s.dirQueue) s.dirQueue = [];
-        if (s.dirQueue.length < 3) s.dirQueue.push(nd);
-      }
+      changeDirection(e.key);
     };
     window.addEventListener('keydown', onKey);
 
@@ -468,7 +474,7 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
       socket.off('snake-restart-ready', onRestartReady);
       socket.emit('snake-leave', { room });
     };
-  }, [socket, room, render, doRestart]);
+  }, [socket, room, render, doRestart, changeDirection]);
 
   const resultColor = result === 'win' ? '#00ffcc' : result === 'tie' ? '#ffe066' : result === 'opp-left' ? '#ffe066' : '#ff2d78';
   const resultText  = result === 'win' ? 'YOU WIN!' : result === 'lose' ? 'YOU LOSE' : result === 'tie' ? 'TIE!' : 'OPPONENT LEFT';
@@ -478,6 +484,14 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
       <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
       <canvas ref={canvasRef} style={{ position: 'relative', zIndex: 10, display: 'block', width: '100%', height: '100%' }} />
       <HomeButton />
+
+      {isMobile && !result && (
+        <div style={{ position: 'fixed', bottom: 30, left: 0, width: '100%', display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
+          <div style={{ pointerEvents: 'auto' }}>
+            <SnakeMobileControls onDirectionChange={changeDirection} />
+          </div>
+        </div>
+      )}
 
       {result && (
         <div style={{

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import Leaderboard from '../../ui/Leaderboard';
-import isMobile from '../../../utils/isMobile';
 import HomeButton from '../../ui/HomeButton';
 import RetroGrid from '../../ui/RetroGrid';
+import isMobile from '../../../utils/isMobile';
+import PacmanMobileControls from './PacmanMobileControls';
 
 const COLS = 21;
 const ROWS = 22;
@@ -159,26 +160,30 @@ function PacmanGame() {
     restart();
   };
 
+  const changeDirection = useCallback((key) => {
+    const s = stateRef.current;
+    if (!s) return;
+    if (s.status === 'dead') {
+      if (!lbVisibleRef.current && (key === 'Enter' || key === ' ')) restart();
+      return;
+    }
+    if (s.status === 'levelComplete') return;
+    const MAP = {
+      ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0],
+      w:[0,-1], s:[0,1], a:[-1,0], d:[1,0],
+    };
+    const d = MAP[key];
+    if (d) { s.pacman.nextDx = d[0]; s.pacman.nextDy = d[1]; }
+  }, [restart]);
+
   // ── Keyboard ──────────────────────────────────────────────────────────────
   useEffect(() => {
     const onKey = (e) => {
-      const s = stateRef.current;
-      if (!s) return;
-      if (s.status === 'dead') {
-        if (!lbVisibleRef.current && (e.key === 'Enter' || e.key === ' ')) restart();
-        return;
-      }
-      if (s.status === 'levelComplete') return;
-      const MAP = {
-        ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0],
-        w:[0,-1], s:[0,1], a:[-1,0], d:[1,0],
-      };
-      const d = MAP[e.key];
-      if (d) { s.pacman.nextDx = d[0]; s.pacman.nextDy = d[1]; }
+      changeDirection(e.key);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [restart]);
+  }, [changeDirection]);
 
   // ── Touch ─────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -579,6 +584,11 @@ function PacmanGame() {
         }}>
           {isMobile ? 'SWIPE TO MOVE' : 'WASD / ARROW KEYS'}
         </div>
+        {isMobile && (
+          <div style={{ marginTop: 20 }}>
+            <PacmanMobileControls onDirectionChange={changeDirection} />
+          </div>
+        )}
       </div>
 
       <Leaderboard

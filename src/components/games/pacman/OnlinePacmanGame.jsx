@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import HomeButton from '../../ui/HomeButton';
 import RetroGrid from '../../ui/RetroGrid';
 import isMobile from '../../../utils/isMobile';
+import PacmanMobileControls from './PacmanMobileControls';
 
 const COLS = 21;
 const ROWS = 22;
@@ -237,24 +238,28 @@ function OnlinePacmanGame({ socket, room, opponentName }) {
     };
   }, [socket, doRestart, checkGameOver]);
 
+  const changeDirection = useCallback((key) => {
+    const s = myStateRef.current;
+    if (!s) return;
+    const MAP = {
+      ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0],
+      w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0],
+    };
+    const dir = MAP[key];
+    if (dir && s.status === 'playing') {
+      s.pacman.nextDx = dir[0];
+      s.pacman.nextDy = dir[1];
+    }
+  }, []);
+
   // Keyboard controls
   useEffect(() => {
     const onKey = (e) => {
-      const s = myStateRef.current;
-      if (!s) return;
-      const MAP = {
-        ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0],
-        w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0],
-      };
-      const dir = MAP[e.key];
-      if (dir && s.status === 'playing') {
-        s.pacman.nextDx = dir[0];
-        s.pacman.nextDy = dir[1];
-      }
+      changeDirection(e.key);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [changeDirection]);
 
   // Touch / swipe controls
   useEffect(() => {
@@ -745,6 +750,11 @@ function OnlinePacmanGame({ socket, room, opponentName }) {
           <div style={{ border: '2px solid rgba(0,180,255,0.4)', borderRadius: 4, boxShadow: '0 0 32px rgba(0,100,255,0.28),inset 0 0 24px rgba(0,0,40,0.85)', overflow: 'hidden' }}>
             <canvas ref={myCanvasRef} width={CW} height={CH} style={{ display: 'block' }} />
           </div>
+          {isMobile && !result && (
+            <div style={{ marginTop: 20 }}>
+              <PacmanMobileControls onDirectionChange={changeDirection} />
+            </div>
+          )}
         </div>
 
         {/* Opponent column */}
