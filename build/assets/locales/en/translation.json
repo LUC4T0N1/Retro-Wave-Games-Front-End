@@ -38,5 +38,10 @@
   "rotate-right": "ROTATE R",
   "rotate-left": "ROTATE L",
   "hold": "HOLD",
-  "pause": "PAUSE"
+  "pause": "PAUSE",
+  "jump": "JUMP (2×)",
+  "duck": "DUCK",
+  "move-paddle": "MOVE",
+  "player-1": "PLAYER 1",
+  "player-2": "PLAYER 2"
 }

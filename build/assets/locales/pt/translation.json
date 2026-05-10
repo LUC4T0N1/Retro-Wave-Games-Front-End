@@ -38,5 +38,10 @@
   "rotate-right": "GIRAR DIREITA",
   "rotate-left": "GIRAR ESQUERDA",
   "hold": "RESERVAR",
-  "pause": "PAUSAR"
+  "pause": "PAUSAR",
+  "jump": "PULAR (2×)",
+  "duck": "AGACHAR",
+  "move-paddle": "MOVER",
+  "player-1": "JOGADOR 1",
+  "player-2": "JOGADOR 2"
 }
