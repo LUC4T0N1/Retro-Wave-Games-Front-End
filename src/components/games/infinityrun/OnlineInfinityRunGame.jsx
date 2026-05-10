@@ -490,8 +490,10 @@ function OnlineInfinityRunGame({ socket, room, opponentName, myName = 'YOU' }) {
         const key = pool[Math.floor(Math.random() * pool.length)];
         s.obstacles.push({ x: LW + 20, type: key, ...OBS[key] });
         const sn = Math.min(1, (s.speed - INIT_SPEED) / (MAX_SPEED - INIT_SPEED));
-        const maxGap = 820 - sn * 280;
-        s.nextObs = s.dist + 380 + Math.random() * Math.max(0, maxGap - 380);
+        // Slightly increased spacing at high speeds to allow recovery
+        const minGap = 380 + sn * 100;
+        const maxGap = 820 - sn * 180;
+        s.nextObs = s.dist + minGap + Math.random() * Math.max(0, maxGap - minGap);
       }
       const pad=7, mH=m.ducking?MONKEY_DH:MONKEY_H, mHalf=(m.ducking?MONKEY_DW:MONKEY_W)/2;
       const mL=MONKEY_X-mHalf+pad, mR=MONKEY_X+mHalf-pad, mT=m.y+pad, mB=m.y+mH-pad;

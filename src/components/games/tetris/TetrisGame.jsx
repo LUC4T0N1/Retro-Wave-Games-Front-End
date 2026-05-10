@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Leaderboard from '../../ui/Leaderboard'; // Importado
 import HomeButton from '../../ui/HomeButton';
 import RetroGrid from '../../ui/RetroGrid';
@@ -88,9 +89,67 @@ function spawnPiece(key) {
   return { shape: p.shape, color: p.color, x: Math.floor((COLS - p.shape[0].length) / 2), y: -1 };
 }
 
+function DesktopControls({ t }) {
+  if (isMobile) return null;
+  
+  const controlStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '12px',
+    marginBottom: '8px',
+    fontSize: '11px',
+    fontFamily: "'Orbitron', sans-serif",
+    color: 'rgba(255, 255, 255, 0.6)',
+    letterSpacing: '0.05em'
+  };
+  
+  const keyStyle = {
+    color: '#00e5ff',
+    fontWeight: 'bold',
+    textShadow: '0 0 8px #00e5ff88'
+  };
+
+  return (
+    <div style={{
+      position: 'fixed',
+      left: '24px',
+      bottom: '24px',
+      zIndex: 20,
+      background: 'rgba(4, 0, 18, 0.75)',
+      border: '1px solid rgba(0, 229, 255, 0.3)',
+      borderRadius: '6px',
+      padding: '16px',
+      backdropFilter: 'blur(10px)',
+      boxShadow: '0 0 20px rgba(0, 0, 0, 0.5)',
+      animation: 'spFadeUp 0.6s 0.5s both',
+      width: '180px'
+    }}>
+      <div style={{
+        fontFamily: "'Orbitron', sans-serif",
+        fontSize: '11px',
+        fontWeight: 'bold',
+        color: '#ff2d78',
+        marginBottom: '14px',
+        textAlign: 'center',
+        letterSpacing: '0.2em',
+        textShadow: '0 0 10px #ff2d7888'
+      }}>{t('controls')}</div>
+      
+      <div style={controlStyle}><span style={keyStyle}>← →</span> <span>{t('move')}</span></div>
+      <div style={controlStyle}><span style={keyStyle}>↓</span> <span>{t('soft-drop')}</span></div>
+      <div style={controlStyle}><span style={keyStyle}>SPACE</span> <span>{t('hard-drop')}</span></div>
+      <div style={controlStyle}><span style={keyStyle}>↑ / X</span> <span>{t('rotate-right')}</span></div>
+      <div style={controlStyle}><span style={keyStyle}>Z</span> <span>{t('rotate-left')}</span></div>
+      <div style={controlStyle}><span style={keyStyle}>C / SHIFT</span> <span>{t('hold')}</span></div>
+      <div style={controlStyle}><span style={keyStyle}>P / ESC</span> <span>{t('pause')}</span></div>
+      <div style={controlStyle}><span style={keyStyle}>R</span> <span>{t('restart')}</span></div>
+    </div>
+  );
+}
+
 export default function TetrisGame() {
+  const { t } = useTranslation();
   const canvasRef = useRef(null);
-  const navigate = useNavigate();
   const stateRef = useRef(null);
   const animRef = useRef(null);
   const lastDropRef = useRef(0);
@@ -370,7 +429,7 @@ export default function TetrisGame() {
     const { board: clearedBoard, cleared } = clearLines(newBoard);
 
     let bag = [...s.bag], nextBag = [...s.nextBag];
-    const nextKey = bag.length ? bag.pop() : nextBag.pop();
+    bag.length ? bag.pop() : nextBag.pop();
     if (!bag.length) { const nb = newBag(); bag = nb; }
     const afterNext = bag.length ? bag[bag.length - 1] : nextBag[nextBag.length - 1];
 
@@ -543,6 +602,8 @@ export default function TetrisGame() {
       <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
       <canvas ref={canvasRef} style={{ position: 'relative', zIndex: 10, display: 'block', width: '100%', height: '100%' }} />
       <HomeButton />
+
+      <DesktopControls t={t} />
 
       {isMobile && (
         <TetrisMobileControls

@@ -524,8 +524,10 @@ function InfinityRunGame() {
         const key = pool[Math.floor(Math.random() * pool.length)];
         s.obstacles.push({ x: LW + 20, type: key, ...OBS[key] });
         const speedNorm = Math.min(1, (s.speed - INIT_SPEED) / (MAX_SPEED - INIT_SPEED));
-        const maxGap = 820 - speedNorm * 280;
-        const gap = 380 + Math.random() * Math.max(0, maxGap - 380);
+        // Slightly increased spacing at high speeds to allow recovery
+        const minGap = 380 + speedNorm * 100;
+        const maxGap = 820 - speedNorm * 180;
+        const gap = minGap + Math.random() * Math.max(0, maxGap - minGap);
         s.nextObs = s.dist + gap;
       }
 

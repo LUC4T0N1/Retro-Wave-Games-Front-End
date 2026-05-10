@@ -30,5 +30,13 @@
   "queue-title": "FIND A MATCH",
   "with-friend": "WITH FRIEND",
   "medium": "Medium",
-  "profanity-warning": "USERNAME CONTAINS INAPPROPRIATE LANGUAGE"
+  "profanity-warning": "USERNAME CONTAINS INAPPROPRIATE LANGUAGE",
+  "controls": "CONTROLS",
+  "move": "MOVE",
+  "soft-drop": "SOFT DROP",
+  "hard-drop": "HARD DROP",
+  "rotate-right": "ROTATE R",
+  "rotate-left": "ROTATE L",
+  "hold": "HOLD",
+  "pause": "PAUSE"
 }
