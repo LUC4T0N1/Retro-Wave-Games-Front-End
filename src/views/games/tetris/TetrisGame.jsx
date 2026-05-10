@@ -21,29 +21,31 @@ export default function TetrisGame() {
     initState, handleAction, lockAndNext, lastDropRef 
   } = useTetris();
 
-  const drawBlock = useCallback((ctx, x, y, color, cs, alpha = 1, ghost = false) => {
+  const drawBlock = useCallback((ctx, px, py, color, cs, alpha = 1, ghost = false) => {
     ctx.save();
     ctx.globalAlpha = alpha;
     if (ghost) {
       ctx.strokeStyle = color;
       ctx.lineWidth = 1.5;
-      ctx.strokeRect(x * cs + 1, y * cs + 1, cs - 2, cs - 2);
+      ctx.strokeRect(px + 1, py + 1, cs - 2, cs - 2);
     } else {
-      const grd = ctx.createLinearGradient(x * cs, y * cs, x * cs + cs, y * cs + cs);
+      const grd = ctx.createLinearGradient(px, py, px + cs, py + cs);
       grd.addColorStop(0, color + 'ff');
       grd.addColorStop(1, color + '99');
       ctx.fillStyle = grd;
-      ctx.fillRect(x * cs + 1, y * cs + 1, cs - 2, cs - 2);
+      ctx.fillRect(px + 1, py + 1, cs - 2, cs - 2);
     }
     ctx.restore();
   }, []);
 
-  const drawMini = useCallback((ctx, shape, color, ox, oy, cs) => {
+  const drawMini = useCallback((ctx, shape, color, areaX, areaY, areaW, areaH, miniCs) => {
     const rows = shape.length, cols = shape[0].length;
-    const offX = (4 - cols) / 2, offY = (4 - rows) / 2;
+    const pieceW = cols * miniCs, pieceH = rows * miniCs;
+    const ox = areaX + (areaW - pieceW) / 2;
+    const oy = areaY + (areaH - pieceH) / 2;
     for (let r = 0; r < rows; r++)
       for (let c = 0; c < cols; c++)
-        if (shape[r][c]) drawBlock(ctx, ox + c + offX, oy + r + offY, COLORS[color], cs);
+        if (shape[r][c]) drawBlock(ctx, ox + c * miniCs, oy + r * miniCs, COLORS[color], miniCs);
   }, [drawBlock]);
 
   const render = useCallback(() => {
@@ -85,13 +87,12 @@ export default function TetrisGame() {
     // Board pieces
     for (let r = 0; r < ROWS; r++)
       for (let c = 0; c < COLS; c++)
-        if (s.board[r][c]) drawBlock(ctx, bx / cs + c, by / cs + r, COLORS[s.board[r][c]], cs);
+        if (s.board[r][c]) drawBlock(ctx, bx + c * cs, by + r * cs, COLORS[s.board[r][c]], cs);
 
     // Current & Ghost
     ctx.save();
-    ctx.translate(bx, by);
     ctx.beginPath();
-    ctx.rect(0, 0, boardW, cs * ROWS);
+    ctx.rect(bx, by, boardW, cs * ROWS);
     ctx.clip();
 
     if (s.status === 'playing' && s.current) {
@@ -100,41 +101,42 @@ export default function TetrisGame() {
         for (let r = 0; r < s.current.shape.length; r++)
           for (let c = 0; c < s.current.shape[r].length; c++)
             if (s.current.shape[r][c])
-              drawBlock(ctx, s.current.x + c, gy + r, COLORS[s.current.color], cs, 0.35, true);
+              drawBlock(ctx, bx + (s.current.x + c) * cs, by + (gy + r) * cs, COLORS[s.current.color], cs, 0.35, true);
       }
       for (let r = 0; r < s.current.shape.length; r++)
         for (let c = 0; c < s.current.shape[r].length; c++)
           if (s.current.shape[r][c])
-            drawBlock(ctx, s.current.x + c, s.current.y + r, COLORS[s.current.color], cs);
+            drawBlock(ctx, bx + (s.current.x + c) * cs, by + (s.current.y + r) * cs, COLORS[s.current.color], cs);
     }
     ctx.restore();
 
     // Panels
     const lx = (W - totalW) / 2;
     const miniCs = cs * 0.8;
+    const panelPW = panelW - cs * 0.4;
     ctx.save();
     ctx.fillStyle = 'rgba(4,0,18,0.72)';
     ctx.strokeStyle = 'rgba(180,0,255,0.35)';
-    ctx.fillRect(lx, by, panelW - cs * 0.4, cs * 6);
-    ctx.strokeRect(lx, by, panelW - cs * 0.4, cs * 6);
+    ctx.fillRect(lx, by, panelPW, cs * 6);
+    ctx.strokeRect(lx, by, panelPW, cs * 6);
     ctx.fillStyle = '#c200ff';
     ctx.textAlign = 'center';
     ctx.font = `bold ${cs * 0.42}px Orbitron, sans-serif`;
-    ctx.fillText('HOLD', lx + (panelW - cs * 0.4) / 2, by + cs * 0.85);
-    if (s.hold) drawMini(ctx, PIECES[s.hold].shape, PIECES[s.hold].color, lx / cs + 0.3, by / cs + 1.2, miniCs);
+    ctx.fillText('HOLD', lx + panelPW / 2, by + cs * 0.85);
+    if (s.hold) drawMini(ctx, PIECES[s.hold].shape, s.hold, lx, by + cs, panelPW, cs * 4.5, miniCs);
     ctx.restore();
 
     const rx = bx + boardW + cs * 0.4;
     ctx.save();
     ctx.fillStyle = 'rgba(4,0,18,0.72)';
     ctx.strokeStyle = 'rgba(0,229,255,0.25)';
-    ctx.fillRect(rx, by, panelW - cs * 0.4, cs * 6);
-    ctx.strokeRect(rx, by, panelW - cs * 0.4, cs * 6);
+    ctx.fillRect(rx, by, panelPW, cs * 6);
+    ctx.strokeRect(rx, by, panelPW, cs * 6);
     ctx.fillStyle = '#00e5ff';
     ctx.textAlign = 'center';
     ctx.font = `bold ${cs * 0.42}px Orbitron, sans-serif`;
-    ctx.fillText('NEXT', rx + (panelW - cs * 0.4) / 2, by + cs * 0.85);
-    if (s.next) drawMini(ctx, PIECES[s.next].shape, PIECES[s.next].color, rx / cs + 0.3, by / cs + 1.2, miniCs);
+    ctx.fillText('NEXT', rx + panelPW / 2, by + cs * 0.85);
+    if (s.next) drawMini(ctx, PIECES[s.next].shape, s.next, rx, by + cs, panelPW, cs * 4.5, miniCs);
     ctx.restore();
 
     // HUD

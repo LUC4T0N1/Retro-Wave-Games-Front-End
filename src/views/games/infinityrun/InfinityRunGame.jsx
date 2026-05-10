@@ -119,28 +119,61 @@ export default function InfinityRunGame() {
     }
 
     function drawMonkey(m) {
-      const { y, ducking, animTick } = m;
-      const O = '#ff8c00', LO = '#ffb84d', DO = '#cc5000';
+      const { y, ducking, animTick, onGround } = m;
+      const O = '#ff8c00', LO = '#ffb84d', DO = '#cc5000', G = '#ff6600';
       ctx.save();
       if (ducking) {
         const bx = MONKEY_X - MONKEY_DW / 2, by = y;
-        ctx.strokeStyle = DO; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(bx + 6, by + 4); ctx.quadraticCurveTo(bx - 14, by - 8, bx - 5, by - 20); ctx.stroke();
-        ctx.fillStyle = O; rrPath(ctx, bx + 5, by + 2, MONKEY_DW - 22, MONKEY_DH - 4, 6); ctx.fill();
+        ctx.strokeStyle = DO; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(bx + 6, by + 4); ctx.quadraticCurveTo(bx - 14, by - 8, bx - 5, by - 20); ctx.stroke();
+        ctx.shadowColor = G; ctx.shadowBlur = 14; ctx.fillStyle = O;
+        rrPath(ctx, bx + 5, by + 2, MONKEY_DW - 22, MONKEY_DH - 4, 6); ctx.fill();
         ctx.beginPath(); ctx.arc(bx + MONKEY_DW - 13, by + MONKEY_DH / 2, 14, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = LO; ctx.beginPath(); ctx.ellipse(bx + MONKEY_DW - 10, by + MONKEY_DH / 2 + 2, 9, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0; ctx.fillStyle = LO;
+        ctx.beginPath(); ctx.ellipse(bx + MONKEY_DW - 10, by + MONKEY_DH / 2 + 2, 9, 10, 0, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(bx + MONKEY_DW - 6, by + MONKEY_DH / 2 - 3, 3.5, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(bx + MONKEY_DW - 5, by + MONKEY_DH / 2 - 3, 1.8, 0, Math.PI * 2); ctx.fill();
       } else {
-        const bx = MONKEY_X - MONKEY_W / 2, by = y, runSin = Math.sin(animTick * 0.24);
-        ctx.strokeStyle = DO; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(bx + 2, by + MONKEY_H * 0.55); ctx.quadraticCurveTo(bx - 17, by + MONKEY_H * 0.35, bx - 8, by + 5); ctx.stroke();
-        ctx.fillStyle = O; const ll = m.onGround ? Math.round(runSin * 9) : 0;
+        const bx = MONKEY_X - MONKEY_W / 2, by = y, rs = Math.sin(animTick * 0.24);
+        // Tail
+        ctx.strokeStyle = DO; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
+        const tw = onGround ? Math.sin(animTick * 0.22) * 7 : 0;
+        ctx.beginPath(); ctx.moveTo(bx + 2, by + MONKEY_H * 0.55); ctx.quadraticCurveTo(bx - 17, by + MONKEY_H * 0.35 + tw, bx - 8, by + 5); ctx.stroke();
+        // Legs
+        ctx.shadowColor = G; ctx.shadowBlur = 8; ctx.fillStyle = O;
+        const ll = onGround ? Math.round(rs * 9) : 0;
         ctx.fillRect(bx + 4, by + MONKEY_H - 20 + (ll > 0 ? 0 : -ll), 11, 20 + (ll > 0 ? ll : 0));
         ctx.fillRect(bx + MONKEY_W - 15, by + MONKEY_H - 20 + (ll > 0 ? -ll : 0), 11, 20 + (ll > 0 ? 0 : ll));
+        // Body
+        ctx.shadowColor = G; ctx.shadowBlur = 14; ctx.fillStyle = O;
         rrPath(ctx, bx + 2, by + MONKEY_H * 0.35, MONKEY_W - 4, MONKEY_H * 0.58, 7); ctx.fill();
+        // Arms (Animated)
+        const as = onGround ? rs * 10 : -8;
+        ctx.save();
+        ctx.fillStyle = O; ctx.shadowBlur = 0;
+        // Left Arm
+        ctx.translate(bx + 6, by + MONKEY_H * 0.5);
+        ctx.rotate(as * Math.PI / 180);
+        rrPath(ctx, -5, 0, 10, 18, 5); ctx.fill();
+        ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.restore();
+        ctx.save();
+        ctx.fillStyle = O;
+        // Right Arm
+        ctx.translate(bx + MONKEY_W - 6, by + MONKEY_H * 0.5);
+        ctx.rotate(-as * Math.PI / 180);
+        rrPath(ctx, -5, 0, 10, 18, 5); ctx.fill();
+        ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.restore();
+        // Head
+        ctx.shadowColor = G; ctx.shadowBlur = 14; ctx.fillStyle = O;
         ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2, by + 14, 15, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = LO; ctx.beginPath(); ctx.ellipse(bx + MONKEY_W / 2, by + 18, 9, 11, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 - 5, by + 12, 4, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 + 5, by + 12, 4, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 - 4, by + 12, 2, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 + 6, by + 12, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0; ctx.fillStyle = LO;
+        ctx.beginPath(); ctx.ellipse(bx + MONKEY_W / 2, by + 18, 9, 11, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fff'; 
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 - 5, by + 12, 4, 0, Math.PI * 2); ctx.fill(); 
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 + 5, by + 12, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#111'; 
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 - 4, by + 12, 2, 0, Math.PI * 2); ctx.fill(); 
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 + 6, by + 12, 2, 0, Math.PI * 2); ctx.fill();
       }
       ctx.restore();
     }
@@ -150,11 +183,46 @@ export default function InfinityRunGame() {
       const top = GROUND_Y - yOff - h;
       ctx.save();
       if (type.startsWith('cactus')) {
+        function cactSeg(rx, ry, rw, rh, r) {
+          const g = ctx.createLinearGradient(rx, ry, rx + rw, ry);
+          g.addColorStop(0, '#004b00'); g.addColorStop(0.5, '#006400'); g.addColorStop(1, '#003300');
+          ctx.fillStyle = g; ctx.shadowColor = '#00ff41'; ctx.shadowBlur = 12;
+          rrPath(ctx, rx, ry, rw, rh, r); ctx.fill();
+          // Ribbon detail
+          ctx.globalAlpha = 0.2; ctx.fillStyle = '#00ff41';
+          ctx.fillRect(rx + rw * 0.4, ry + 2, 2, rh - 4);
+          ctx.globalAlpha = 1;
+        }
+        function spines(sx, sy, dir) {
+          ctx.strokeStyle = '#00ff41'; ctx.lineWidth = 1; ctx.shadowBlur = 5;
+          for (let i = 0; i < 3; i++) {
+            const oy = (i - 1) * 5;
+            ctx.beginPath(); ctx.moveTo(sx, sy + oy); ctx.lineTo(sx + dir * 7, sy + oy - 2); ctx.stroke();
+          }
+        }
         const mid = x + w / 2;
-        ctx.fillStyle = '#cc00ff'; rrPath(ctx, mid - 9, top, 18, h, 7); ctx.fill();
+        if (type === 'cactus_tall') {
+          cactSeg(mid - 30, top + h * 0.15, 22, 10, 4); cactSeg(mid - 30, top + h * 0.15, 10, h * 0.25, 4);
+          cactSeg(mid + 8, top + h * 0.35, 22, 10, 4); cactSeg(mid + 20, top + h * 0.2, 10, h * 0.2, 4);
+          cactSeg(mid - 9, top, 18, h, 8);
+          spines(mid - 30, top + h * 0.15, -1); spines(mid + 30, top + h * 0.35, 1);
+        } else if (type === 'cactus_short') {
+          cactSeg(mid - 24, top + h * 0.3, 16, 10, 4); cactSeg(mid - 16, top + h * 0.1, 9, h * 0.25, 4);
+          cactSeg(mid + 8, top + h * 0.45, 16, 10, 4); cactSeg(mid + 7, top + h * 0.25, 9, h * 0.25, 4);
+          cactSeg(mid - 8, top, 16, h, 7);
+          spines(mid - 24, top + h * 0.3, -1); spines(mid + 24, top + h * 0.45, 1);
+        } else {
+          // cactus_pair or generic
+          cactSeg(x + 4, top + 15, 15, h - 15, 6);
+          cactSeg(x + w - 19, top + 5, 15, h - 5, 6);
+          spines(x + 4, top + h * 0.5, -1); spines(x + w - 4, top + h * 0.3, 1);
+        }
       } else {
         const cx = x + w / 2, cy = top + h / 2;
-        ctx.fillStyle = '#00ccff'; ctx.beginPath(); ctx.ellipse(cx, cy, w / 2 - 5, h / 2 - 1, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 18;
+        ctx.fillStyle = '#005588';
+        ctx.beginPath(); ctx.ellipse(cx, cy, w / 2 - 5, h / 2 - 1, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx + w / 2 - 12, cy - 4, 3, 0, Math.PI * 2); ctx.fill();
       }
       ctx.restore();
     }
@@ -233,7 +301,7 @@ export default function InfinityRunGame() {
 
         {/* Controls */}
         <div style={{ fontFamily: "'VT323', monospace", fontSize: 14, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-          {isMobile ? 'TAP TOP → JUMP • TAP BOTTOM → DUCK' : 'SPACE / ↑ → JUMP (2×) • ↓ → DUCK'}
+          {isMobile ? 'TAP TOP - JUMP • TAP BOTTOM - DUCK' : 'SPACE / ↑ - JUMP (2×) • ↓ - DUCK'}
         </div>
       </div>
 

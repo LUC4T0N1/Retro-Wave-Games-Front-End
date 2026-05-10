@@ -280,97 +280,123 @@ function OnlineInfinityRunGame({ socket, room, opponentName, myName = 'YOU' }) {
     // ── my monkey (orange) ─────────────────────────────────────────────
     function drawMonkey(monkey, yOff) {
       const { y, ducking, onGround, animTick } = monkey;
-      const O='#ff8c00', LO='#ffb84d', DO='#cc5000', G='#ff6600';
+      const O = '#ff8c00', LO = '#ffb84d', DO = '#cc5000', G = '#ff6600';
       ctx.save();
       if (ducking) {
-        const bx=MONKEY_X-MONKEY_DW/2, by=yOff+y;
-        ctx.strokeStyle=DO; ctx.lineWidth=3.5; ctx.lineCap='round'; ctx.shadowBlur=0;
-        ctx.beginPath(); ctx.moveTo(bx+6,by+4); ctx.quadraticCurveTo(bx-14,by-8,bx-5,by-20); ctx.stroke();
-        ctx.shadowColor=G; ctx.shadowBlur=14; ctx.fillStyle=O;
-        rrPath(ctx,bx+5,by+2,MONKEY_DW-22,MONKEY_DH-4,6); ctx.fill();
-        ctx.beginPath(); ctx.arc(bx+MONKEY_DW-13,by+MONKEY_DH/2,14,0,Math.PI*2); ctx.fillStyle=O; ctx.fill();
-        ctx.shadowBlur=0; ctx.fillStyle=DO;
-        ctx.beginPath(); ctx.arc(bx+MONKEY_DW-24,by+MONKEY_DH/2-9,6.5,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#ff4488'; ctx.beginPath(); ctx.arc(bx+MONKEY_DW-24,by+MONKEY_DH/2-9,3.5,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle=LO; ctx.beginPath(); ctx.ellipse(bx+MONKEY_DW-10,by+MONKEY_DH/2+2,9,10,0,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(bx+MONKEY_DW-6,by+MONKEY_DH/2-3,3.5,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(bx+MONKEY_DW-5,by+MONKEY_DH/2-3,1.8,0,Math.PI*2); ctx.fill();
+        const bx = MONKEY_X - MONKEY_DW / 2, by = yOff + y;
+        ctx.strokeStyle = DO; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.shadowBlur = 0;
+        ctx.beginPath(); ctx.moveTo(bx + 6, by + 4); ctx.quadraticCurveTo(bx - 14, by - 8, bx - 5, by - 20); ctx.stroke();
+        ctx.shadowColor = G; ctx.shadowBlur = 14; ctx.fillStyle = O;
+        rrPath(ctx, bx + 5, by + 2, MONKEY_DW - 22, MONKEY_DH - 4, 6); ctx.fill();
+        ctx.beginPath(); ctx.arc(bx + MONKEY_DW - 13, by + MONKEY_DH / 2, 14, 0, Math.PI * 2); ctx.fillStyle = O; ctx.fill();
+        ctx.shadowBlur = 0; ctx.fillStyle = DO;
+        ctx.beginPath(); ctx.arc(bx + MONKEY_DW - 24, by + MONKEY_DH / 2 - 9, 6.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ff4488'; ctx.beginPath(); ctx.arc(bx + MONKEY_DW - 24, by + MONKEY_DH / 2 - 9, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = LO; ctx.beginPath(); ctx.ellipse(bx + MONKEY_DW - 10, by + MONKEY_DH / 2 + 2, 9, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(bx + MONKEY_DW - 6, by + MONKEY_DH / 2 - 3, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(bx + MONKEY_DW - 5, by + MONKEY_DH / 2 - 3, 1.8, 0, Math.PI * 2); ctx.fill();
       } else {
-        const bx=MONKEY_X-MONKEY_W/2, by=yOff+y, rs=Math.sin(animTick*0.24);
-        ctx.strokeStyle=DO; ctx.lineWidth=3.5; ctx.lineCap='round'; ctx.shadowBlur=0;
-        const tw=onGround?Math.sin(animTick*0.22)*7:0;
-        ctx.beginPath(); ctx.moveTo(bx+2,by+MONKEY_H*0.55); ctx.quadraticCurveTo(bx-17,by+MONKEY_H*0.35+tw,bx-8,by+5); ctx.stroke();
-        ctx.shadowColor=G; ctx.shadowBlur=8; ctx.fillStyle=O;
-        const ll=onGround?Math.round(rs*9):0;
-        ctx.fillRect(bx+4,by+MONKEY_H-20+(ll>0?0:-ll),11,20+(ll>0?ll:0));
-        ctx.fillRect(bx+MONKEY_W-15,by+MONKEY_H-20+(ll>0?-ll:0),11,20+(ll>0?0:ll));
-        ctx.shadowColor=G; ctx.shadowBlur=14; ctx.fillStyle=O;
-        rrPath(ctx,bx+2,by+MONKEY_H*0.35,MONKEY_W-4,MONKEY_H*0.58,7); ctx.fill();
-        const as=onGround?Math.round(rs*7):0;
-        if (!onGround) { ctx.fillRect(bx-9,by+MONKEY_H*0.35,11,16); ctx.fillRect(bx+MONKEY_W-2,by+MONKEY_H*0.35,11,16); }
-        else { ctx.fillRect(bx-7,by+MONKEY_H*0.42+as,11,17); ctx.fillRect(bx+MONKEY_W-4,by+MONKEY_H*0.42-as,11,17); }
-        ctx.shadowColor=G; ctx.shadowBlur=14; ctx.fillStyle=O;
-        ctx.beginPath(); ctx.arc(bx+MONKEY_W/2,by+14,15,0,Math.PI*2); ctx.fill();
-        ctx.shadowBlur=0; ctx.fillStyle=DO;
-        ctx.beginPath(); ctx.arc(bx+2,by+7,6.5,0,Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(bx+MONKEY_W-2,by+7,6.5,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#ff4488';
-        ctx.beginPath(); ctx.arc(bx+2,by+7,3.5,0,Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(bx+MONKEY_W-2,by+7,3.5,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle=LO; ctx.beginPath(); ctx.ellipse(bx+MONKEY_W/2,by+18,9,11,0,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#fff';
-        ctx.beginPath(); ctx.arc(bx+MONKEY_W/2-5,by+12,4,0,Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(bx+MONKEY_W/2+5,by+12,4,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#111';
-        ctx.beginPath(); ctx.arc(bx+MONKEY_W/2-4,by+12,2,0,Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(bx+MONKEY_W/2+6,by+12,2,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle=DO; ctx.beginPath(); ctx.ellipse(bx+MONKEY_W/2,by+21,4.5,3,0,0,Math.PI*2); ctx.fill();
+        const bx = MONKEY_X - MONKEY_W / 2, by = yOff + y, rs = Math.sin(animTick * 0.24);
+        ctx.strokeStyle = DO; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.shadowBlur = 0;
+        const tw = onGround ? Math.sin(animTick * 0.22) * 7 : 0;
+        ctx.beginPath(); ctx.moveTo(bx + 2, by + MONKEY_H * 0.55); ctx.quadraticCurveTo(bx - 17, by + MONKEY_H * 0.35 + tw, bx - 8, by + 5); ctx.stroke();
+        ctx.shadowColor = G; ctx.shadowBlur = 8; ctx.fillStyle = O;
+        const ll = onGround ? Math.round(rs * 9) : 0;
+        ctx.fillRect(bx + 4, by + MONKEY_H - 20 + (ll > 0 ? 0 : -ll), 11, 20 + (ll > 0 ? ll : 0));
+        ctx.fillRect(bx + MONKEY_W - 15, by + MONKEY_H - 20 + (ll > 0 ? -ll : 0), 11, 20 + (ll > 0 ? 0 : ll));
+        ctx.shadowColor = G; ctx.shadowBlur = 14; ctx.fillStyle = O;
+        rrPath(ctx, bx + 2, by + MONKEY_H * 0.35, MONKEY_W - 4, MONKEY_H * 0.58, 7); ctx.fill();
+        
+        // Animated Arms
+        const as = onGround ? rs * 10 : -8;
+        ctx.save();
+        ctx.fillStyle = O; ctx.shadowBlur = 0;
+        ctx.translate(bx + 6, by + MONKEY_H * 0.5); ctx.rotate(as * Math.PI / 180);
+        rrPath(ctx, -5, 0, 10, 18, 5); ctx.fill();
+        ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.restore();
+        ctx.save();
+        ctx.fillStyle = O;
+        ctx.translate(bx + MONKEY_W - 6, by + MONKEY_H * 0.5); ctx.rotate(-as * Math.PI / 180);
+        rrPath(ctx, -5, 0, 10, 18, 5); ctx.fill();
+        ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.restore();
+
+        ctx.shadowColor = G; ctx.shadowBlur = 14; ctx.fillStyle = O;
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2, by + 14, 15, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0; ctx.fillStyle = DO;
+        ctx.beginPath(); ctx.arc(bx + 2, by + 7, 6.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W - 2, by + 7, 6.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ff4488';
+        ctx.beginPath(); ctx.arc(bx + 2, by + 7, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W - 2, by + 7, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = LO; ctx.beginPath(); ctx.ellipse(bx + MONKEY_W / 2, by + 18, 9, 11, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 - 5, by + 12, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 + 5, by + 12, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#111';
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 - 4, by + 12, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 + 6, by + 12, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = DO; ctx.beginPath(); ctx.ellipse(bx + MONKEY_W / 2, by + 21, 4.5, 3, 0, 0, Math.PI * 2); ctx.fill();
       }
       ctx.restore();
     }
 
     // ── opponent monkey (cyan) ─────────────────────────────────────────
-    function drawOppMonkey(monkeyY, ducking, yOff) {
-      const O='#00e5ff', LO='#88ffff', DO='#007799', G='#00ccff';
+    function drawOppMonkey(monkeyY, ducking, yOff, animTick) {
+      const O = '#00e5ff', LO = '#88ffff', DO = '#007799', G = '#00ccff';
       ctx.save();
       if (ducking) {
-        const bx=MONKEY_X-MONKEY_DW/2, by=yOff+monkeyY;
-        ctx.strokeStyle=DO; ctx.lineWidth=3.5; ctx.lineCap='round'; ctx.shadowBlur=0;
-        ctx.beginPath(); ctx.moveTo(bx+6,by+4); ctx.quadraticCurveTo(bx-14,by-8,bx-5,by-20); ctx.stroke();
-        ctx.shadowColor=G; ctx.shadowBlur=14; ctx.fillStyle=O;
-        rrPath(ctx,bx+5,by+2,MONKEY_DW-22,MONKEY_DH-4,6); ctx.fill();
-        ctx.beginPath(); ctx.arc(bx+MONKEY_DW-13,by+MONKEY_DH/2,14,0,Math.PI*2); ctx.fillStyle=O; ctx.fill();
-        ctx.shadowBlur=0; ctx.fillStyle=DO;
-        ctx.beginPath(); ctx.arc(bx+MONKEY_DW-24,by+MONKEY_DH/2-9,6.5,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#aa00ff'; ctx.beginPath(); ctx.arc(bx+MONKEY_DW-24,by+MONKEY_DH/2-9,3.5,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle=LO; ctx.beginPath(); ctx.ellipse(bx+MONKEY_DW-10,by+MONKEY_DH/2+2,9,10,0,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(bx+MONKEY_DW-6,by+MONKEY_DH/2-3,3.5,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#003355'; ctx.beginPath(); ctx.arc(bx+MONKEY_DW-5,by+MONKEY_DH/2-3,1.8,0,Math.PI*2); ctx.fill();
+        const bx = MONKEY_X - MONKEY_DW / 2, by = yOff + monkeyY;
+        ctx.strokeStyle = DO; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.shadowBlur = 0;
+        ctx.beginPath(); ctx.moveTo(bx + 6, by + 4); ctx.quadraticCurveTo(bx - 14, by - 8, bx - 5, by - 20); ctx.stroke();
+        ctx.shadowColor = G; ctx.shadowBlur = 14; ctx.fillStyle = O;
+        rrPath(ctx, bx + 5, by + 2, MONKEY_DW - 22, MONKEY_DH - 4, 6); ctx.fill();
+        ctx.beginPath(); ctx.arc(bx + MONKEY_DW - 13, by + MONKEY_DH / 2, 14, 0, Math.PI * 2); ctx.fillStyle = O; ctx.fill();
+        ctx.shadowBlur = 0; ctx.fillStyle = DO;
+        ctx.beginPath(); ctx.arc(bx + MONKEY_DW - 24, by + MONKEY_DH / 2 - 9, 6.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#aa00ff'; ctx.beginPath(); ctx.arc(bx + MONKEY_DW - 24, by + MONKEY_DH / 2 - 9, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = LO; ctx.beginPath(); ctx.ellipse(bx + MONKEY_DW - 10, by + MONKEY_DH / 2 + 2, 9, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(bx + MONKEY_DW - 6, by + MONKEY_DH / 2 - 3, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#003355'; ctx.beginPath(); ctx.arc(bx + MONKEY_DW - 5, by + MONKEY_DH / 2 - 3, 1.8, 0, Math.PI * 2); ctx.fill();
       } else {
-        const bx=MONKEY_X-MONKEY_W/2, by=yOff+monkeyY;
-        ctx.strokeStyle=DO; ctx.lineWidth=3.5; ctx.lineCap='round'; ctx.shadowBlur=0;
-        ctx.beginPath(); ctx.moveTo(bx+2,by+MONKEY_H*0.55); ctx.quadraticCurveTo(bx-17,by+MONKEY_H*0.35,bx-8,by+5); ctx.stroke();
-        ctx.shadowColor=G; ctx.shadowBlur=8; ctx.fillStyle=O;
-        ctx.fillRect(bx+4,by+MONKEY_H-20,11,20); ctx.fillRect(bx+MONKEY_W-15,by+MONKEY_H-20,11,20);
-        ctx.shadowColor=G; ctx.shadowBlur=14; ctx.fillStyle=O;
-        rrPath(ctx,bx+2,by+MONKEY_H*0.35,MONKEY_W-4,MONKEY_H*0.58,7); ctx.fill();
-        ctx.fillRect(bx-9,by+MONKEY_H*0.35,11,16); ctx.fillRect(bx+MONKEY_W-2,by+MONKEY_H*0.35,11,16);
-        ctx.shadowColor=G; ctx.shadowBlur=14; ctx.fillStyle=O;
-        ctx.beginPath(); ctx.arc(bx+MONKEY_W/2,by+14,15,0,Math.PI*2); ctx.fill();
-        ctx.shadowBlur=0; ctx.fillStyle=DO;
-        ctx.beginPath(); ctx.arc(bx+2,by+7,6.5,0,Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(bx+MONKEY_W-2,by+7,6.5,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#aa00ff';
-        ctx.beginPath(); ctx.arc(bx+2,by+7,3.5,0,Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(bx+MONKEY_W-2,by+7,3.5,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle=LO; ctx.beginPath(); ctx.ellipse(bx+MONKEY_W/2,by+18,9,11,0,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#fff';
-        ctx.beginPath(); ctx.arc(bx+MONKEY_W/2-5,by+12,4,0,Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(bx+MONKEY_W/2+5,by+12,4,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#003355';
-        ctx.beginPath(); ctx.arc(bx+MONKEY_W/2-4,by+12,2,0,Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(bx+MONKEY_W/2+6,by+12,2,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle=DO; ctx.beginPath(); ctx.ellipse(bx+MONKEY_W/2,by+21,4.5,3,0,0,Math.PI*2); ctx.fill();
+        const bx = MONKEY_X - MONKEY_W / 2, by = yOff + monkeyY, rs = Math.sin(animTick * 0.24);
+        ctx.strokeStyle = DO; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.shadowBlur = 0;
+        ctx.beginPath(); ctx.moveTo(bx + 2, by + MONKEY_H * 0.55); ctx.quadraticCurveTo(bx - 17, by + MONKEY_H * 0.35, bx - 8, by + 5); ctx.stroke();
+        ctx.shadowColor = G; ctx.shadowBlur = 8; ctx.fillStyle = O;
+        const ll = Math.round(rs * 9);
+        ctx.fillRect(bx + 4, by + MONKEY_H - 20 + (ll > 0 ? 0 : -ll), 11, 20 + (ll > 0 ? ll : 0));
+        ctx.fillRect(bx + MONKEY_W - 15, by + MONKEY_H - 20 + (ll > 0 ? -ll : 0), 11, 20 + (ll > 0 ? 0 : ll));
+        ctx.shadowColor = G; ctx.shadowBlur = 14; ctx.fillStyle = O;
+        rrPath(ctx, bx + 2, by + MONKEY_H * 0.35, MONKEY_W - 4, MONKEY_H * 0.58, 7); ctx.fill();
+        
+        // Animated Arms
+        const as = rs * 10;
+        ctx.save();
+        ctx.fillStyle = O; ctx.shadowBlur = 0;
+        ctx.translate(bx + 6, by + MONKEY_H * 0.5); ctx.rotate(as * Math.PI / 180);
+        rrPath(ctx, -5, 0, 10, 18, 5); ctx.fill();
+        ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.restore();
+        ctx.save();
+        ctx.fillStyle = O;
+        ctx.translate(bx + MONKEY_W - 6, by + MONKEY_H * 0.5); ctx.rotate(-as * Math.PI / 180);
+        rrPath(ctx, -5, 0, 10, 18, 5); ctx.fill();
+        ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.restore();
+
+        ctx.shadowColor = G; ctx.shadowBlur = 14; ctx.fillStyle = O;
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2, by + 14, 15, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0; ctx.fillStyle = DO;
+        ctx.beginPath(); ctx.arc(bx + 2, by + 7, 6.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W - 2, by + 7, 6.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#aa00ff';
+        ctx.beginPath(); ctx.arc(bx + 2, by + 7, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W - 2, by + 7, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = LO; ctx.beginPath(); ctx.ellipse(bx + MONKEY_W / 2, by + 18, 9, 11, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 - 5, by + 12, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 + 5, by + 12, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#003355';
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 - 4, by + 12, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(bx + MONKEY_W / 2 + 6, by + 12, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = DO; ctx.beginPath(); ctx.ellipse(bx + MONKEY_W / 2, by + 21, 4.5, 3, 0, 0, Math.PI * 2); ctx.fill();
       }
       ctx.restore();
     }
@@ -382,36 +408,37 @@ function OnlineInfinityRunGame({ socket, room, opponentName, myName = 'YOU' }) {
       ctx.save();
       if (type.startsWith('cactus')) {
         function cactSeg(rx, ry, rw, rh, r) {
-          const g = ctx.createLinearGradient(rx, ry, rx+rw, ry);
-          g.addColorStop(0,'#ff66ff'); g.addColorStop(0.35,'#cc00ff'); g.addColorStop(1,'#660099');
-          ctx.fillStyle=g; ctx.shadowColor='#cc00ff'; ctx.shadowBlur=14;
-          rrPath(ctx,rx,ry,rw,rh,r); ctx.fill();
-          ctx.globalAlpha=0.26; ctx.fillStyle='#fff';
-          rrPath(ctx,rx+2,ry+2,Math.max(2,rw*0.28),rh-4,r); ctx.fill();
-          ctx.globalAlpha=1;
+          const g = ctx.createLinearGradient(rx, ry, rx + rw, ry);
+          g.addColorStop(0, '#004b00'); g.addColorStop(0.5, '#006400'); g.addColorStop(1, '#003300');
+          ctx.fillStyle = g; ctx.shadowColor = '#00ff41'; ctx.shadowBlur = 12;
+          rrPath(ctx, rx, ry, rw, rh, r); ctx.fill();
+          // Ribbon detail
+          ctx.globalAlpha = 0.2; ctx.fillStyle = '#00ff41';
+          ctx.fillRect(rx + rw * 0.4, ry + 2, 2, rh - 4);
+          ctx.globalAlpha = 1;
         }
         function spines(sx, sy, dir) {
-          ctx.strokeStyle='#ff88ff'; ctx.lineWidth=1.1; ctx.shadowBlur=5;
-          for (let i=0;i<3;i++) { const oy=(i-1)*4; ctx.beginPath(); ctx.moveTo(sx,sy+oy); ctx.lineTo(sx+dir*8,sy+oy-3+i*2); ctx.stroke(); }
+          ctx.strokeStyle = '#00ff41'; ctx.lineWidth = 1; ctx.shadowBlur = 5;
+          for (let i = 0; i < 3; i++) {
+            const oy = (i - 1) * 5;
+            ctx.beginPath(); ctx.moveTo(sx, sy + oy); ctx.lineTo(sx + dir * 7, sy + oy - 2); ctx.stroke();
+          }
         }
-        const mid=x+w/2;
-        if (type==='cactus_tall') {
-          cactSeg(mid-30,top+h*0.10,22,10,4); cactSeg(mid-30,top+h*0.10,10,h*0.20,4);
-          cactSeg(mid+8, top+h*0.28,22,10,4); cactSeg(mid+18,top+h*0.12,10,h*0.18,4);
-          cactSeg(mid-9, top,18,h,7);
-          spines(mid-30,top+h*0.10,-1); spines(mid-9,top+h*0.10,+1);
-          spines(mid+8, top+h*0.28,-1); spines(mid+30,top+h*0.28,+1);
-        } else if (type==='cactus_short') {
-          cactSeg(mid-24,top+h*0.33,16,10,4); cactSeg(mid-16,top+h*0.14,9,h*0.22,4);
-          cactSeg(mid+8, top+h*0.40,16,10,4); cactSeg(mid+7, top+h*0.22,9,h*0.20,4);
-          cactSeg(mid-8,top,16,h,7);
-          spines(mid-24,top+h*0.33,-1); spines(mid+24,top+h*0.40,+1);
+        const mid = x + w / 2;
+        if (type === 'cactus_tall') {
+          cactSeg(mid - 30, top + h * 0.15, 22, 10, 4); cactSeg(mid - 30, top + h * 0.15, 10, h * 0.25, 4);
+          cactSeg(mid + 8, top + h * 0.35, 22, 10, 4); cactSeg(mid + 20, top + h * 0.2, 10, h * 0.2, 4);
+          cactSeg(mid - 9, top, 18, h, 8);
+          spines(mid - 30, top + h * 0.15, -1); spines(mid + 30, top + h * 0.35, 1);
+        } else if (type === 'cactus_short') {
+          cactSeg(mid - 24, top + h * 0.3, 16, 10, 4); cactSeg(mid - 16, top + h * 0.1, 9, h * 0.25, 4);
+          cactSeg(mid + 8, top + h * 0.45, 16, 10, 4); cactSeg(mid + 7, top + h * 0.25, 9, h * 0.25, 4);
+          cactSeg(mid - 8, top, 16, h, 7);
+          spines(mid - 24, top + h * 0.3, -1); spines(mid + 24, top + h * 0.45, 1);
         } else {
-          const lx=x+4, rx2=x+w-22;
-          cactSeg(lx-10,top+h*0.28,14,10,4); cactSeg(lx-10,top+h*0.14,8,h*0.16,4);
-          cactSeg(lx,top+14,14,h-14,6); spines(lx-10,top+h*0.28,-1);
-          cactSeg(rx2+14,top+h*0.20,14,10,4); cactSeg(rx2+14,top+h*0.06,8,h*0.16,4);
-          cactSeg(rx2,top+6,14,h-6,6); spines(rx2+28,top+h*0.20,+1);
+          cactSeg(x + 4, top + 15, 15, h - 15, 6);
+          cactSeg(x + w - 19, top + 5, 15, h - 5, 6);
+          spines(x + 4, top + h * 0.5, -1); spines(x + w - 4, top + h * 0.3, 1);
         }
       } else {
         const cx=x+w/2, cy=top+h/2, wb=Math.floor(tick/10)%2===0, wd=wb?8:-5;
@@ -519,7 +546,7 @@ function OnlineInfinityRunGame({ socket, room, opponentName, myName = 'YOU' }) {
       }
       drawSeparator();
       (opp.obstacles || []).forEach(o => drawObstacle(o, s.tick, OPP_Y));
-      drawOppMonkey(opp.monkeyY ?? GROUND_Y - MONKEY_H, opp.ducking, OPP_Y);
+      drawOppMonkey(opp.monkeyY ?? GROUND_Y - MONKEY_H, opp.ducking, OPP_Y, s.monkey.animTick);
       drawLabel(opponentName, opp.score || 0, opp.speed || INIT_SPEED, OPP_Y);
       if (opp.status === 'dead' && !resultRef.current) {
         ctx.save(); ctx.globalAlpha = 0.6; ctx.fillStyle = '#000'; ctx.fillRect(0, OPP_Y, LW, LH);
@@ -597,7 +624,11 @@ function OnlineInfinityRunGame({ socket, room, opponentName, myName = 'YOU' }) {
         />
       </div>
       <HomeButton />
-
+      <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginTop: 20 }}>
+        <div style={{ fontFamily: "'VT323', monospace", fontSize: 14, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+          {isMobile ? 'TAP TOP - JUMP • TAP BOTTOM - DUCK' : 'SPACE / ↑ - JUMP (2×) • ↓ - DUCK'}
+        </div>
+      </div>
       {result && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(2,0,16,0.82)', backdropFilter: 'blur(6px)', padding: 20 }}>
           <div style={{ 

@@ -8,7 +8,6 @@ const LW = 800, LH = 480;
 const BALL_R = 8;
 const PAD_W = 14, PAD_H = 92;
 const PAD_MARGIN = 28;
-const WIN_SCORE = 7;
 const INIT_SPEED = 6.5;
 const COUNTDOWN_SEC = 3;
 const PLAYER_SPD = 7.5;
@@ -74,7 +73,7 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
   const DW = Math.round(LW * scale);
   const DH = Math.round(LH * scale);
 
-  const [, setUi] = useState({ pScore: 0, aScore: 0, phase: 'countdown', winner: null, oppLeft: false });
+  const [ui, setUi] = useState({ pScore: 0, aScore: 0, phase: 'countdown', winner: null, oppLeft: false });
 
   // Cleanup on unmount
   useEffect(() => {
@@ -218,19 +217,6 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
       ctx.restore();
     }
 
-    function drawScores(pScore, aScore, leftLabel, rightLabel) {
-      ctx.save(); ctx.textBaseline = 'top';
-      ctx.font = "11px 'Orbitron', sans-serif";
-      ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(0,229,255,0.45)'; ctx.fillText(leftLabel, LW / 2 - 14, 12);
-      ctx.textAlign = 'left';  ctx.fillStyle = 'rgba(255,45,120,0.45)'; ctx.fillText(rightLabel, LW / 2 + 14, 12);
-      ctx.font = "72px 'VT323', monospace";
-      ctx.textAlign = 'right'; ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 22; ctx.fillStyle = '#00e5ff'; ctx.fillText(pScore, LW / 2 - 10, 24);
-      ctx.textAlign = 'left';  ctx.shadowColor = '#ff2d78'; ctx.shadowBlur = 22; ctx.fillStyle = '#ff2d78'; ctx.fillText(aScore, LW / 2 + 10, 24);
-      ctx.font = "9px 'Orbitron', sans-serif"; ctx.textAlign = 'center'; ctx.shadowBlur = 0;
-      ctx.fillStyle = 'rgba(255,255,255,0.20)'; ctx.fillText(`FIRST TO ${WIN_SCORE}`, LW / 2, 100);
-      ctx.restore();
-    }
-
     function drawCountdown(cdown) {
       ctx.save();
       ctx.globalAlpha = Math.min(1, 0.35 + (cdown % 1) * 0.65);
@@ -261,10 +247,6 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
       ctx.shadowBlur = 0; ctx.font = "13px 'Orbitron', sans-serif"; ctx.fillStyle = 'rgba(255,255,255,0.45)';
       ctx.fillText('RETURN TO MENU', LW / 2, LH / 2 + 28); ctx.restore();
     }
-
-    // ── Update & draw ─────────────────────────────────────────────────────────
-    const leftLabel  = isHost ? 'YOU' : (opponentName || 'OPP');
-    const rightLabel = isHost ? (opponentName || 'OPP') : 'YOU';
 
     function movePaddle(s, dt) {
       const inp  = inputRef.current;
@@ -319,7 +301,6 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
       drawPaddle(RIGHT_PAD_X, rightY, '#ff2d78');
 
       if (s.phase !== 'gameover') drawBall(s.ball, s.tick);
-      drawScores(s.pScore, s.aScore, leftLabel, rightLabel);
       if (s.phase === 'countdown') drawCountdown(s.cdown);
       if (s.phase === 'gameover' && !oppLeftRef.current) drawGameOver(s.winner);
       if (oppLeftRef.current) drawOppLeft();
@@ -362,6 +343,19 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
       </div>
 
       <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+        {/* Score Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 60, marginBottom: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 10, color: 'rgba(0,229,255,0.6)', letterSpacing: '0.1em' }}>{isHost ? 'YOU' : (opponentName || 'OPP')}</div>
+            <div style={{ fontFamily: "'VT323', monospace", fontSize: 48, color: '#00e5ff', textShadow: '0 0 15px rgba(0,229,255,0.6)', lineHeight: 1 }}>{ui.pScore}</div>
+          </div>
+          <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 9, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.2em' }}>VS</div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 10, color: 'rgba(255,45,120,0.6)', letterSpacing: '0.1em' }}>{isHost ? (opponentName || 'OPP') : 'YOU'}</div>
+            <div style={{ fontFamily: "'VT323', monospace", fontSize: 48, color: '#ff2d78', textShadow: '0 0 15px rgba(255,45,120,0.6)', lineHeight: 1 }}>{ui.aScore}</div>
+          </div>
+        </div>
+
         <div style={{
           border: '2px solid rgba(180,0,255,0.38)', borderRadius: 4,
           boxShadow: '0 0 36px rgba(180,0,255,0.20), 0 0 72px rgba(100,0,255,0.10), inset 0 0 28px rgba(0,0,40,0.88)',

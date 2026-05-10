@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import isMobile from '../../../utils/isMobile';
 import HomeButton from '../../../components/shared/HomeButton';
@@ -7,7 +7,7 @@ import { usePong } from '../../../controllers/pong/usePong';
 import { 
   LW, LH, BALL_R, PAD_W, PAD_H, PAD_MARGIN, WIN_SCORE, 
   INIT_SPEED, MAX_SPEED, SPD_PER_HIT, COUNTDOWN_SEC, 
-  PLAYER_SPD, MAX_BOUNCE_ANGLE, AI_CFG, newBall, initState 
+  PLAYER_SPD, MAX_BOUNCE_ANGLE, AI_CFG, newBall 
 } from '../../../models/pong/pongModel';
 
 export default function PongGame() {
@@ -67,7 +67,6 @@ export default function PongGame() {
     function drawCenterLine() { ctx.save(); ctx.strokeStyle = 'rgba(180,0,255,0.28)'; ctx.shadowColor = '#c200ff'; ctx.shadowBlur = 10; ctx.lineWidth = 2; ctx.setLineDash([14, 14]); ctx.beginPath(); ctx.moveTo(LW / 2, 0); ctx.lineTo(LW / 2, LH); ctx.stroke(); ctx.setLineDash([]); ctx.restore(); }
     function drawPaddle(x, y, color) { ctx.save(); ctx.shadowColor = color; ctx.shadowBlur = 26; rr(x, y, PAD_W, PAD_H, 4); ctx.fillStyle = color; ctx.fill(); ctx.globalAlpha = 0.30; rr(x + 2, y + 4, PAD_W - 4, PAD_H - 8, 3); ctx.fillStyle = '#fff'; ctx.fill(); ctx.restore(); }
     function drawBall(b, tick) { ctx.save(); for (let i = 3; i >= 1; i--) { ctx.globalAlpha = 0.07 * (4 - i); ctx.fillStyle = '#ffe066'; ctx.beginPath(); ctx.arc(b.x - b.vx * i * 0.9, b.y - b.vy * i * 0.9, BALL_R * (1 - i * 0.1), 0, Math.PI * 2); ctx.fill(); } ctx.globalAlpha = 1; ctx.shadowColor = '#ffe066'; ctx.shadowBlur = 16 + 6 * Math.sin(tick * 0.09); const g = ctx.createRadialGradient(b.x - 2, b.y - 2, 0, b.x, b.y, BALL_R); g.addColorStop(0, '#ffffff'); g.addColorStop(0.4, '#ffe066'); g.addColorStop(1, 'rgba(255,136,0,0.6)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(b.x, b.y, BALL_R, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
-    function drawScores(pScore, aScore, leftLabel, rightLabel) { ctx.save(); ctx.font = "11px 'Orbitron', sans-serif"; ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(0,229,255,0.45)'; ctx.fillText(leftLabel, LW / 2 - 14, 12); ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(255,45,120,0.45)'; ctx.fillText(rightLabel, LW / 2 + 14, 12); ctx.font = "72px 'VT323', monospace"; ctx.textAlign = 'right'; ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 22; ctx.fillStyle = '#00e5ff'; ctx.fillText(pScore, LW / 2 - 10, 24); ctx.textAlign = 'left'; ctx.shadowColor = '#ff2d78'; ctx.shadowBlur = 22; ctx.fillStyle = '#ff2d78'; ctx.fillText(aScore, LW / 2 + 10, 24); ctx.font = "9px 'Orbitron', sans-serif"; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,0.20)'; ctx.fillText(`FIRST TO ${WIN_SCORE}`, LW / 2, 100); ctx.restore(); }
     function drawCountdown(cdown) { const num = Math.ceil(cdown), pulse = cdown % 1; ctx.save(); ctx.globalAlpha = Math.min(1, 0.35 + pulse * 0.65); ctx.font = "bold 88px 'VT323', monospace"; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 28; ctx.fillStyle = '#00e5ff'; ctx.fillText(num, LW / 2, LH / 2 + 50); ctx.restore(); }
     function drawGameOver(winner, isLocalMode) { ctx.save(); ctx.globalAlpha = 0.62; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, LW, LH); ctx.globalAlpha = 1; const won = winner === 'player', col = won ? '#00ffcc' : '#ff2d78', label = isLocalMode ? (won ? 'PLAYER 1 WINS!' : 'PLAYER 2 WINS!') : (won ? 'YOU WIN!' : 'GAME OVER'); ctx.shadowColor = col; ctx.shadowBlur = 50; ctx.font = "bold 68px 'Orbitron', sans-serif"; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = col; ctx.fillText(label, LW / 2, LH / 2 - 30); ctx.shadowBlur = 0; ctx.font = "13px 'Orbitron', sans-serif"; ctx.fillStyle = 'rgba(255,255,255,0.50)'; ctx.fillText(isMobile ? 'TAP TO PLAY AGAIN' : 'PRESS SPACE TO PLAY AGAIN', LW / 2, LH / 2 + 28); ctx.restore(); }
 
@@ -87,7 +86,7 @@ export default function PongGame() {
       if (b.x + BALL_R > LW) { s.pScore++; if (s.pScore >= WIN_SCORE) { s.phase = 'gameover'; s.winner = 'player'; } else { s.ball = newBall(1); s.phase = 'countdown'; s.cdown = COUNTDOWN_SEC; } setUi({ pScore: s.pScore, aScore: s.aScore, phase: s.phase, winner: s.winner }); return; }
     }
 
-    function draw(s) { ctx.clearRect(0, 0, LW, LH); drawCenterLine(); drawPaddle(PAD_MARGIN, s.pY, '#00e5ff'); drawPaddle(LW - PAD_MARGIN - PAD_W, s.aY, '#ff2d78'); if (s.phase !== 'gameover') drawBall(s.ball, s.tick); drawScores(s.pScore, s.aScore, isLocal ? 'P1' : 'YOU', isLocal ? 'P2' : 'CPU'); if (s.phase === 'countdown') drawCountdown(s.cdown); if (s.phase === 'gameover') drawGameOver(s.winner, isLocal); }
+    function draw(s) { ctx.clearRect(0, 0, LW, LH); drawCenterLine(); drawPaddle(PAD_MARGIN, s.pY, '#00e5ff'); drawPaddle(LW - PAD_MARGIN - PAD_W, s.aY, '#ff2d78'); if (s.phase !== 'gameover') drawBall(s.ball, s.tick); if (s.phase === 'countdown') drawCountdown(s.cdown); if (s.phase === 'gameover') drawGameOver(s.winner, isLocal); }
     function tick(ts) { const dt = Math.min(0.05, (ts - lastTRef.current) / 1000); lastTRef.current = ts; const s = stateRef.current; if (!s) { animRef.current = requestAnimationFrame(tick); return; } update(dt, s); draw(s); if (s.tick % 4 === 0) setUi({ pScore: s.pScore, aScore: s.aScore, phase: s.phase, winner: s.winner }); animRef.current = requestAnimationFrame(tick); }
     animRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animRef.current);
@@ -101,6 +100,19 @@ export default function PongGame() {
       <HomeButton />
       <div style={{ position: 'absolute', top: 22, right: 24, zIndex: 20, fontFamily: "'Orbitron', sans-serif", fontSize: 10, letterSpacing: '0.14em', color: 'rgba(255,255,255,0.28)', textTransform: 'uppercase' }}>PONG — {diffLabel}</div>
       <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+        {/* Score Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 60, marginBottom: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 10, color: 'rgba(0,229,255,0.6)', letterSpacing: '0.1em' }}>{isLocal ? 'P1' : 'YOU'}</div>
+            <div style={{ fontFamily: "'VT323', monospace", fontSize: 48, color: '#00e5ff', textShadow: '0 0 15px rgba(0,229,255,0.6)', lineHeight: 1 }}>{ui.pScore}</div>
+          </div>
+          <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 9, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.2em' }}>VS</div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 10, color: 'rgba(255,45,120,0.6)', letterSpacing: '0.1em' }}>{isLocal ? 'P2' : 'CPU'}</div>
+            <div style={{ fontFamily: "'VT323', monospace", fontSize: 48, color: '#ff2d78', textShadow: '0 0 15px rgba(255,45,120,0.6)', lineHeight: 1 }}>{ui.aScore}</div>
+          </div>
+        </div>
+
         <div style={{ border: '2px solid rgba(180,0,255,0.38)', borderRadius: 4, boxShadow: '0 0 36px rgba(180,0,255,0.20), 0 0 72px rgba(100,0,255,0.10), inset 0 0 28px rgba(0,0,40,0.88)', overflow: 'hidden' }}><canvas ref={canvasRef} width={LW} height={LH} style={{ display: 'block', width: DW, height: DH }} /></div>
         <div style={{ fontFamily: "'VT323', monospace", fontSize: 14, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.22em', textTransform: 'uppercase' }}>{isLocal ? 'W / S — P1   •   ↑ / ↓ — P2' : (isMobile ? 'DRAG TO MOVE PADDLE' : 'W / ↑ — UP   •   S / ↓ — DOWN')}</div>
       </div>

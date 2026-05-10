@@ -105,8 +105,9 @@ export default function SnakeGame() {
           ctx.shadowBlur = 0;
           ctx.fillStyle = '#001a10';
           const eyeR = sz * 0.13, fwd = sz * 0.16, side = sz * 0.20;
-          ctx.beginPath(); ctx.arc(rx + s.dir.dx * fwd - s.dir.dy * side, ry + s.dir.dy * fwd + s.dir.dx * side, eyeR, 0, Math.PI * 2); ctx.fill();
-          ctx.beginPath(); ctx.arc(rx + s.dir.dx * fwd + s.dir.dy * side, ry + s.dir.dy * fwd - s.dir.dx * side, eyeR, 0, Math.PI * 2); ctx.fill();
+          const lookDir = s.dirQueue?.length > 0 ? s.dirQueue[0] : s.dir;
+          ctx.beginPath(); ctx.arc(rx + lookDir.dx * fwd - lookDir.dy * side, ry + lookDir.dy * fwd + lookDir.dx * side, eyeR, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(rx + lookDir.dx * fwd + lookDir.dy * side, ry + lookDir.dy * fwd - lookDir.dx * side, eyeR, 0, Math.PI * 2); ctx.fill();
         }
         ctx.shadowBlur = 0;
       }

@@ -163,14 +163,14 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
       if (isHead) {
         ctx.shadowBlur = 0;
         ctx.fillStyle = '#001a10';
-        const d = s.dir;
+        const lookDir = (!isOpp && s.dirQueue?.length > 0) ? s.dirQueue[0] : s.dir;
         const eyeR = sz * 0.13;
         const fwd = sz * 0.16, side = sz * 0.20;
         ctx.beginPath();
-        ctx.arc(rx + d.dx * fwd - d.dy * side, ry + d.dy * fwd + d.dx * side, eyeR, 0, Math.PI * 2);
+        ctx.arc(rx + lookDir.dx * fwd - lookDir.dy * side, ry + lookDir.dy * fwd + lookDir.dx * side, eyeR, 0, Math.PI * 2);
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(rx + d.dx * fwd + d.dy * side, ry + d.dy * fwd - d.dx * side, eyeR, 0, Math.PI * 2);
+        ctx.arc(rx + lookDir.dx * fwd + lookDir.dy * side, ry + lookDir.dy * fwd - lookDir.dx * side, eyeR, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.shadowBlur = 0;
