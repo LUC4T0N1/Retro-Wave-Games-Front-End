@@ -22,12 +22,18 @@ export default function BreakoutGame() {
     sessionToken, syncUi, startGame, requestSession 
   } = useBreakout();
 
+  // When gameover: fetch a fresh session token, THEN show leaderboard
   useEffect(() => {
-    if (ui.status === 'gameover') {
-      setLbVisible(true);
-      lbVisibleRef.current = true;
-    }
-  }, [ui.status, setLbVisible]);
+    if (ui.status !== 'gameover') return;
+    let cancelled = false;
+    requestSession().then(() => {
+      if (!cancelled) {
+        setLbVisible(true);
+        lbVisibleRef.current = true;
+      }
+    });
+    return () => { cancelled = true; };
+  }, [ui.status, setLbVisible, requestSession]);
 
   const launch = useCallback(() => {
     const s = stateRef.current;

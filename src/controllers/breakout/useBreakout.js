@@ -21,17 +21,21 @@ export function useBreakout() {
         method: 'POST',
       });
       const json = await res.json();
-      setSessionToken(json.sessionToken || null);
+      const token = json.sessionToken || null;
+      setSessionToken(token);
+      return token;
     } catch {
       setSessionToken(null);
+      return null;
     }
   }, []);
 
   const startGame = useCallback(() => {
     stateRef.current = buildState(1, 0, LIVES_START);
     setLbVisible(false);
-    requestSession();
+    setSessionToken(null);
     syncUi();
+    requestSession();
   }, [requestSession, syncUi]);
 
   useEffect(() => {
