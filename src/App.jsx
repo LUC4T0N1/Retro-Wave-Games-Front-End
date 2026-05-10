@@ -1,31 +1,31 @@
 import "./App.css";
 import { lazy, Suspense } from 'react';
-import Home from "./components/home/Home";
+import Home from "./views/home/Home";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-const Error = lazy(() => import("./components/error/Error"));
-const TicTacToeGame        = lazy(() => import("./components/games/tictactoe/TicTacToeGame"));
-const TicTacToeLocalGame   = lazy(() => import("./components/games/tictactoe/TicTacToeLocalGame"));
-const TicTacToeFriendLobby = lazy(() => import("./components/games/tictactoe/TicTacToeFriendLobby"));
-const TicTacToeRandomQueue = lazy(() => import("./components/games/tictactoe/TicTacToeRandomQueue"));
-const PacmanGame        = lazy(() => import("./components/games/pacman/PacmanGame"));
-const PacmanFriendLobby = lazy(() => import("./components/games/pacman/PacmanFriendLobby"));
-const PacmanRandomQueue = lazy(() => import("./components/games/pacman/PacmanRandomQueue"));
-const SnakeGame  = lazy(() => import("./components/games/snake/SnakeGame"));
-const SnakeFriendLobby = lazy(() => import("./components/games/snake/SnakeFriendLobby"));
-const SnakeRandomQueue = lazy(() => import("./components/games/snake/SnakeRandomQueue"));
-const BreakoutGame = lazy(() => import("./components/games/breakout/BreakoutGame"));
-const BreakoutFriendLobby = lazy(() => import("./components/games/breakout/BreakoutFriendLobby"));
-const BreakoutRandomQueue = lazy(() => import("./components/games/breakout/BreakoutRandomQueue"));
-const TetrisGame        = lazy(() => import("./components/games/tetris/TetrisGame"));
-const TetrisFriendLobby = lazy(() => import("./components/games/tetris/TetrisFriendLobby"));
-const TetrisRandomQueue = lazy(() => import("./components/games/tetris/TetrisRandomQueue"));
-const InfinityRunGame        = lazy(() => import("./components/games/infinityrun/InfinityRunGame"));
-const InfinityRunFriendLobby = lazy(() => import("./components/games/infinityrun/InfinityRunFriendLobby"));
-const InfinityRunRandomQueue = lazy(() => import("./components/games/infinityrun/InfinityRunRandomQueue"));
-const PongGame        = lazy(() => import("./components/games/pong/PongGame"));
-const PongFriendLobby = lazy(() => import("./components/games/pong/PongFriendLobby"));
-const PongRandomQueue = lazy(() => import("./components/games/pong/PongRandomQueue"));
+const Error = lazy(() => import("./views/error/Error"));
+const TicTacToeGame        = lazy(() => import("./views/games/tictactoe/TicTacToeGame"));
+const TicTacToeLocalGame   = lazy(() => import("./views/games/tictactoe/TicTacToeLocalGame"));
+const TicTacToeFriendLobby = lazy(() => import("./views/games/tictactoe/TicTacToeFriendLobby"));
+const TicTacToeRandomQueue = lazy(() => import("./views/games/tictactoe/TicTacToeRandomQueue"));
+const PacmanGame        = lazy(() => import("./views/games/pacman/PacmanGame"));
+const PacmanFriendLobby = lazy(() => import("./views/games/pacman/PacmanFriendLobby"));
+const PacmanRandomQueue = lazy(() => import("./views/games/pacman/PacmanRandomQueue"));
+const SnakeGame  = lazy(() => import("./views/games/snake/SnakeGame"));
+const SnakeFriendLobby = lazy(() => import("./views/games/snake/SnakeFriendLobby"));
+const SnakeRandomQueue = lazy(() => import("./views/games/snake/SnakeRandomQueue"));
+const BreakoutGame = lazy(() => import("./views/games/breakout/BreakoutGame"));
+const BreakoutFriendLobby = lazy(() => import("./views/games/breakout/BreakoutFriendLobby"));
+const BreakoutRandomQueue = lazy(() => import("./views/games/breakout/BreakoutRandomQueue"));
+const TetrisGame        = lazy(() => import("./views/games/tetris/TetrisGame"));
+const TetrisFriendLobby = lazy(() => import("./views/games/tetris/TetrisFriendLobby"));
+const TetrisRandomQueue = lazy(() => import("./views/games/tetris/TetrisRandomQueue"));
+const InfinityRunGame        = lazy(() => import("./views/games/infinityrun/InfinityRunGame"));
+const InfinityRunFriendLobby = lazy(() => import("./views/games/infinityrun/InfinityRunFriendLobby"));
+const InfinityRunRandomQueue = lazy(() => import("./views/games/infinityrun/InfinityRunRandomQueue"));
+const PongGame        = lazy(() => import("./views/games/pong/PongGame"));
+const PongFriendLobby = lazy(() => import("./views/games/pong/PongFriendLobby"));
+const PongRandomQueue = lazy(() => import("./views/games/pong/PongRandomQueue"));
 
 const LoadingFallback = () => (
   <div style={{ width: '100vw', height: '100vh', background: '#050010' }} />
