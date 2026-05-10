@@ -278,9 +278,8 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
 
   // ── Effect: mount / unmount ────────────────────────────────────────────────
   const changeDirection = useCallback((key) => {
-    if (resultRef.current) return;
     const s = myStateRef.current;
-    if (!s || s.status !== 'playing') return;
+    if (!s || s.status !== 'playing' || resultRef.current) return;
 
     const DIR = {
       ArrowUp: { dx: 0, dy: -1 }, ArrowDown: { dx: 0, dy: 1 },
@@ -290,11 +289,17 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
 
     const nd = DIR[key];
     if (!nd) return;
-    const lastDir = (s.dirQueue && s.dirQueue.length > 0) ? s.dirQueue[s.dirQueue.length - 1] : s.dir;
-    if (!(nd.dx === -lastDir.dx && nd.dy === -lastDir.dy) && !(nd.dx === lastDir.dx && nd.dy === lastDir.dy)) {
-      if (!s.dirQueue) s.dirQueue = [];
-      if (s.dirQueue.length < 3) s.dirQueue.push(nd);
-    }
+    
+    // Get last direction from queue or current dir
+    const last = (s.dirQueue && s.dirQueue.length > 0) ? s.dirQueue[s.dirQueue.length - 1] : s.dir;
+    
+    // Prevent 180 degree turns
+    if (nd.dx === -last.dx && nd.dy === -last.dy) return;
+    // Prevent redundant moves
+    if (nd.dx === last.dx && nd.dy === last.dy) return;
+
+    if (!s.dirQueue) s.dirQueue = [];
+    if (s.dirQueue.length < 3) s.dirQueue.push(nd);
   }, []);
 
   useEffect(() => {
@@ -486,7 +491,7 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
       <HomeButton />
 
       {isMobile && !result && (
-        <div style={{ position: 'fixed', bottom: 30, left: 0, width: '100%', display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
+        <div style={{ position: 'fixed', bottom: 60, left: 0, width: '100%', display: 'flex', justifyContent: 'center', pointerEvents: 'none', zIndex: 9999 }}>
           <div style={{ pointerEvents: 'auto' }}>
             <SnakeMobileControls onDirectionChange={changeDirection} />
           </div>

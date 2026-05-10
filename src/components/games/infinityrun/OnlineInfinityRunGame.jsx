@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HomeButton from '../../ui/HomeButton';
 import RetroGrid from '../../ui/RetroGrid';
+import isMobile from '../../../utils/isMobile';
 
 // ── Constants ─────────────────────────────────────────────────────────────
 const LW = 800, LH = 270;
@@ -64,6 +65,8 @@ function OnlineInfinityRunGame({ socket, room, opponentName, myName = 'YOU' }) {
 
   const [result, setResult]       = useState(null);
   const [myReady, setMyReady]     = useState(false);
+
+  const canvasScale = isMobile ? Math.min((window.innerWidth * 0.94) / LW, (window.innerHeight * 0.8) / TOTAL_H) : 1;
   const [resultData, setResultData] = useState({ myScore: 0, oppScore: 0 });
 
   const doRestart = useCallback(() => {
@@ -576,17 +579,39 @@ function OnlineInfinityRunGame({ socket, room, opponentName, myName = 'YOU' }) {
       <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
 
       <div style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <canvas ref={canvasRef} width={LW} height={TOTAL_H} style={{ display: 'block', border: '2px solid rgba(0,180,255,0.4)', borderRadius: 4, boxShadow: '0 0 32px rgba(0,100,255,0.28), inset 0 0 24px rgba(0,0,40,0.85)' }} />
+        <canvas 
+          ref={canvasRef} 
+          width={LW} 
+          height={TOTAL_H} 
+          style={{ 
+            display: 'block', 
+            border: '2px solid rgba(0,180,255,0.4)', 
+            borderRadius: 4, 
+            boxShadow: '0 0 32px rgba(0,100,255,0.28), inset 0 0 24px rgba(0,0,40,0.85)',
+            width: LW * canvasScale,
+            height: TOTAL_H * canvasScale,
+            touchAction: 'none'
+          }} 
+        />
       </div>
       <HomeButton />
 
       {result && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(2,0,16,0.82)', backdropFilter: 'blur(6px)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, padding: '44px 52px', background: 'rgba(4,0,20,0.92)', border: `2px solid ${isWin ? '#00ff88' : result === 'opp-left' ? AC : '#ff2d78'}`, borderRadius: 8, boxShadow: `0 0 48px ${isWin ? '#00ff8844' : result === 'opp-left' ? '#00b4ff44' : '#ff2d7844'}` }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(2,0,16,0.82)', backdropFilter: 'blur(6px)', padding: 20 }}>
+          <div style={{ 
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, 
+            padding: isMobile ? '30px 24px' : '44px 52px', 
+            width: isMobile ? '90%' : 'auto',
+            maxWidth: 400,
+            background: 'rgba(4,0,20,0.92)', 
+            border: `2px solid ${isWin ? '#00ff88' : result === 'opp-left' ? AC : '#ff2d78'}`, 
+            borderRadius: 8, 
+            boxShadow: `0 0 48px ${isWin ? '#00ff8844' : result === 'opp-left' ? '#00b4ff44' : '#ff2d7844'}` 
+          }}>
             <div style={{ fontFamily: "'VT323', monospace", fontSize: 13, color: isTie ? '#ffe066' : isWin ? '#00ff88' : result === 'opp-left' ? AC : '#ff2d78', letterSpacing: '0.5em', textShadow: `0 0 16px currentColor` }}>
               {result === 'opp-left' ? 'OPPONENT LEFT' : isTie ? 'DRAW' : isWin ? 'VICTORY' : 'GAME OVER'}
             </div>
-            <div style={{ fontFamily: "'Orbitron', sans-serif", fontWeight: 900, fontSize: 48, color: '#fff', letterSpacing: '0.08em', textShadow: `0 0 28px ${isTie ? '#ffe066' : isWin ? '#00ff88' : '#ff2d78'}` }}>
+            <div style={{ fontFamily: "'Orbitron', sans-serif", fontWeight: 900, fontSize: isMobile ? 32 : 48, color: '#fff', letterSpacing: '0.08em', textAlign: 'center', textShadow: `0 0 28px ${isTie ? '#ffe066' : isWin ? '#00ff88' : '#ff2d78'}` }}>
               {result === 'opp-left' ? 'WIN' : isTie ? 'TIE!' : isWin ? 'YOU WIN!' : 'YOU LOSE'}
             </div>
             {result !== 'opp-left' && (

@@ -21,8 +21,8 @@ export default function SnakeMobileControls({ onDirectionChange }) {
     transition: 'all 0.1s'
   });
 
-  const handleTouch = (e, direction) => {
-    e.preventDefault();
+  const handleAction = (e, direction) => {
+    if (e.type === 'touchstart') e.preventDefault();
     onDirectionChange(direction);
   };
 
@@ -39,8 +39,8 @@ export default function SnakeMobileControls({ onDirectionChange }) {
       {/* Up */}
       <button
         style={btnStyle('#00ffcc')}
-        onTouchStart={(e) => handleTouch(e, 'ArrowUp')}
-        onMouseDown={(e) => onDirectionChange('ArrowUp')}
+        onTouchStart={(e) => handleAction(e, 'ArrowUp')}
+        onMouseDown={(e) => handleAction(e, 'ArrowUp')}
       >
         ▲
       </button>
@@ -49,8 +49,8 @@ export default function SnakeMobileControls({ onDirectionChange }) {
         {/* Left */}
         <button
           style={btnStyle('#00ffcc')}
-          onTouchStart={(e) => handleTouch(e, 'ArrowLeft')}
-          onMouseDown={(e) => onDirectionChange('ArrowLeft')}
+          onTouchStart={(e) => handleAction(e, 'ArrowLeft')}
+          onMouseDown={(e) => handleAction(e, 'ArrowLeft')}
         >
           ◀
         </button>
@@ -58,8 +58,8 @@ export default function SnakeMobileControls({ onDirectionChange }) {
         {/* Down */}
         <button
           style={btnStyle('#00ffcc')}
-          onTouchStart={(e) => handleTouch(e, 'ArrowDown')}
-          onMouseDown={(e) => onDirectionChange('ArrowDown')}
+          onTouchStart={(e) => handleAction(e, 'ArrowDown')}
+          onMouseDown={(e) => handleAction(e, 'ArrowDown')}
         >
           ▼
         </button>
@@ -67,8 +67,8 @@ export default function SnakeMobileControls({ onDirectionChange }) {
         {/* Right */}
         <button
           style={btnStyle('#00ffcc')}
-          onTouchStart={(e) => handleTouch(e, 'ArrowRight')}
-          onMouseDown={(e) => onDirectionChange('ArrowRight')}
+          onTouchStart={(e) => handleAction(e, 'ArrowRight')}
+          onMouseDown={(e) => handleAction(e, 'ArrowRight')}
         >
           ▶
         </button>
