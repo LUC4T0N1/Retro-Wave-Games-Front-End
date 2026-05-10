@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from "react-dom/client";
-import { ThemeProvider } from './infrastructure/context';
+
 import LanguageDetector from 'i18next-browser-languagedetector';
 import HttpApi from 'i18next-http-backend';
 
@@ -33,9 +33,7 @@ i18n
   const socket = io.connect(process.env.REACT_APP_SERVER_URL);
 
   root.render(
-    <ThemeProvider>
-      <App socket={socket}/>
-    </ThemeProvider>
-);
+    <App socket={socket}/>
+  );
 
 
