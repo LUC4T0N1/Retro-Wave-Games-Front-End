@@ -160,6 +160,163 @@ export default function OnlineTetrisGame({ socket, room, opponentName }) {
     const ctx = cv.getContext('2d');
     const W = cv.width, H = cv.height;
 
+    ctx.clearRect(0, 0, W, H);
+    ctx.save();
+    const s   = myStateRef.current;
+    const opp = oppStateRef.current;
+    if (!s) return;
+
+    if (isMobile) {
+      // ── Mobile layout: my board large (left), opp mini (right) ─────────────
+      const CTRL_H  = 130; // approx height of TetrisMobileControls
+      const LABEL_H = 22;
+      const MARG    = 4;
+
+      const avH = H - CTRL_H - LABEL_H - MARG * 2;
+      const cs  = Math.max(6, Math.min(Math.floor(avH / ROWS), Math.floor(W * 0.60 / COLS)));
+      const bW  = cs * COLS, bH = cs * ROWS;
+      const myX = MARG, myY = LABEL_H + MARG;
+
+      const remW = W - myX - bW - MARG * 3;
+      const csO  = Math.max(4, Math.floor(remW / COLS));
+      const oW   = csO * COLS, oH = csO * ROWS;
+      const oppX = myX + bW + MARG * 2, oppY = myY;
+
+      // ── My board ──────────────────────────────────────────────────────────
+      ctx.fillStyle = 'rgba(4,0,18,0.85)';
+      ctx.fillRect(myX, myY, bW, bH);
+      ctx.strokeStyle = 'rgba(0,229,255,0.35)';
+      ctx.lineWidth = 1.5; ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 10;
+      ctx.strokeRect(myX, myY, bW, bH);
+      ctx.shadowBlur = 0;
+
+      ctx.save();
+      ctx.globalAlpha = 0.06; ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 0.5;
+      for (let r = 1; r < ROWS; r++) { ctx.beginPath(); ctx.moveTo(myX, myY + r * cs); ctx.lineTo(myX + bW, myY + r * cs); ctx.stroke(); }
+      for (let c = 1; c < COLS; c++) { ctx.beginPath(); ctx.moveTo(myX + c * cs, myY); ctx.lineTo(myX + c * cs, myY + bH); ctx.stroke(); }
+      ctx.restore();
+
+      for (let r = 0; r < ROWS; r++)
+        for (let c = 0; c < COLS; c++)
+          if (s.board[r][c]) drawBlock(ctx, myX + c * cs, myY + r * cs, COLORS[s.board[r][c]], cs);
+
+      ctx.save();
+      ctx.beginPath(); ctx.rect(myX, myY, bW, bH); ctx.clip();
+      if (s.status === 'playing' && s.current) {
+        const gy = ghostY(s.board, s.current.shape, s.current.x, s.current.y);
+        if (gy !== s.current.y)
+          for (let r = 0; r < s.current.shape.length; r++)
+            for (let c = 0; c < s.current.shape[r].length; c++)
+              if (s.current.shape[r][c])
+                drawBlock(ctx, myX + (s.current.x + c) * cs, myY + (gy + r) * cs, COLORS[s.current.color], cs, 0.32, true);
+      }
+      if (s.current && s.status !== 'over')
+        for (let r = 0; r < s.current.shape.length; r++)
+          for (let c = 0; c < s.current.shape[r].length; c++)
+            if (s.current.shape[r][c])
+              drawBlock(ctx, myX + (s.current.x + c) * cs, myY + (s.current.y + r) * cs, COLORS[s.current.color], cs);
+      ctx.restore();
+
+      // "YOU" label
+      ctx.save();
+      ctx.font = `bold ${Math.max(9, cs * 0.52)}px Orbitron, sans-serif`;
+      ctx.fillStyle = '#00e5ff'; ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 8;
+      ctx.textAlign = 'center';
+      ctx.fillText('YOU', myX + bW / 2, LABEL_H - 2);
+      ctx.restore();
+
+      if (s.status === 'dead' && !resultRef.current) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(myX, myY, bW, bH);
+        ctx.fillStyle = '#ff2d78'; ctx.textAlign = 'center';
+        const df = Math.max(12, cs * 0.9);
+        ctx.font = `bold ${df}px Orbitron, sans-serif`;
+        ctx.fillText('DIED',      myX + bW / 2, myY + bH / 2 - df * 0.6);
+        ctx.fillText('SPECTATING', myX + bW / 2, myY + bH / 2 + df * 0.7);
+        ctx.restore();
+      }
+
+      // My stats row below my board
+      const stY = myY + bH + 6;
+      [
+        { label: 'SCORE', value: s.score, color: '#ffe066' },
+        { label: 'LVL',   value: s.level, color: '#ff2d78' },
+        { label: 'LINES', value: s.lines, color: '#00ffcc' },
+      ].forEach(({ label, value, color }, i) => {
+        const sw = bW / 3, tx = myX + i * sw + sw / 2;
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.font = `bold ${Math.max(7, cs * 0.28)}px Orbitron, sans-serif`;
+        ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 4;
+        ctx.fillText(label, tx, stY + 11);
+        ctx.font = `bold ${Math.max(9, cs * 0.42)}px Orbitron, sans-serif`;
+        ctx.fillStyle = '#fff'; ctx.shadowColor = color; ctx.shadowBlur = 8;
+        ctx.fillText(String(value), tx, stY + 26);
+        ctx.restore();
+      });
+
+      // ── Opp board (mini) ──────────────────────────────────────────────────
+      ctx.fillStyle = 'rgba(4,0,18,0.85)';
+      ctx.fillRect(oppX, oppY, oW, oH);
+      ctx.strokeStyle = 'rgba(255,45,120,0.30)';
+      ctx.lineWidth = 1; ctx.shadowColor = '#ff2d78'; ctx.shadowBlur = 6;
+      ctx.strokeRect(oppX, oppY, oW, oH);
+      ctx.shadowBlur = 0;
+
+      if (opp) {
+        for (let r = 0; r < ROWS; r++)
+          for (let c = 0; c < COLS; c++)
+            if (opp.board[r][c]) drawBlock(ctx, oppX + c * csO, oppY + r * csO, COLORS[opp.board[r][c]], csO);
+
+        if (opp.falling) {
+          const { x, y, shape, color } = opp.falling;
+          ctx.save();
+          ctx.beginPath(); ctx.rect(oppX, oppY, oW, oH); ctx.clip();
+          for (let r = 0; r < shape.length; r++)
+            for (let c = 0; c < shape[r].length; c++)
+              if (shape[r][c]) drawBlock(ctx, oppX + (x + c) * csO, oppY + (y + r) * csO, COLORS[color], csO, 0.8);
+          ctx.restore();
+        }
+
+        // Opp stats below opp board
+        const oStY = oppY + oH + 6;
+        const oFs  = Math.max(7, csO * 0.44);
+        [
+          { label: 'SCR', value: opp.score, color: '#ffe066' },
+          { label: 'LVL', value: opp.level, color: '#ff2d78' },
+          { label: 'LNS', value: opp.lines, color: '#00ffcc' },
+        ].forEach(({ label, value, color }, i) => {
+          ctx.save();
+          ctx.textAlign = 'center';
+          ctx.font = `bold ${oFs}px Orbitron, sans-serif`;
+          ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 3;
+          ctx.fillText(`${label}:${value}`, oppX + oW / 2, oStY + i * (oFs + 5) + oFs);
+          ctx.restore();
+        });
+      }
+
+      // Opp name label
+      ctx.save();
+      ctx.font = `bold ${Math.max(8, csO * 0.62)}px Orbitron, sans-serif`;
+      ctx.fillStyle = '#ff2d78'; ctx.shadowColor = '#ff2d78'; ctx.shadowBlur = 6;
+      ctx.textAlign = 'center';
+      ctx.fillText(opponentName.substring(0, 9).toUpperCase(), oppX + oW / 2, LABEL_H - 2);
+      ctx.restore();
+
+      if (opp && opp.status === 'dead' && !resultRef.current) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(oppX, oppY, oW, oH);
+        ctx.fillStyle = '#ff2d78'; ctx.textAlign = 'center';
+        ctx.font = `bold ${Math.max(8, csO * 0.7)}px Orbitron, sans-serif`;
+        ctx.fillText('DIED', oppX + oW / 2, oppY + oH / 2);
+        ctx.restore();
+      }
+
+      ctx.restore();
+      return;
+    }
+
+    // ── Desktop layout ───────────────────────────────────────────────────────
     const cs = Math.max(8, Math.floor(Math.min((W - 20) / 34, (H - 60) / 22)));
     const boardH = cs * ROWS;
     const boardW = cs * COLS;
@@ -180,12 +337,6 @@ export default function OnlineTetrisGame({ socket, room, opponentName }) {
     const myStX    = myBoardX + boardW;
     const oppBoardX = sx + leftW + gap;
     const oppStX    = oppBoardX + boardW;
-
-    ctx.clearRect(0, 0, W, H);
-    ctx.save();
-    const s   = myStateRef.current;
-    const opp = oppStateRef.current;
-    if (!s) return;
 
     // ── My board ────────────────────────────────────────────────────────────
     ctx.save();
