@@ -115,7 +115,7 @@ export default function BreakoutGame() {
       <ControlsLegend controls={[
         ['← / A', 'move'],
         ['→ / D', 'move'],
-        ['CLICK / SPACE', 'move-paddle'],
+        ['CLICK / SPACE', 'launch'],
       ]} />
     </div>
   );
