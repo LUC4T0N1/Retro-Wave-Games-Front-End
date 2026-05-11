@@ -167,18 +167,25 @@ export default function OnlineTetrisGame({ socket, room, opponentName }) {
     if (!s) return;
 
     if (isMobile) {
-      // ── Mobile layout: my board large (left), opp mini (right) ─────────────
-      const CTRL_H  = 130; // approx height of TetrisMobileControls
-      const LABEL_H = 22;
+      // ── Mobile layout ───────────────────────────────────────────────────────
+      const HOME_H  = 48;   // clearance for home button at top
+      const CTRL_H  = 118;  // TetrisMobileControls height at bottom
+      const LABEL_H = 18;   // "YOU" / opp name row
+      const STATS_H = 28;   // my stats row below board
       const MARG    = 4;
 
-      const avH = H - CTRL_H - LABEL_H - MARG * 2;
-      const cs  = Math.max(6, Math.min(Math.floor(avH / ROWS), Math.floor(W * 0.60 / COLS)));
+      // cs: board must fit vertically (without hold col) and ≈52% of width horizontally
+      const avH = H - HOME_H - CTRL_H - LABEL_H - STATS_H - MARG * 3;
+      const cs  = Math.max(7, Math.min(Math.floor(avH / ROWS), Math.floor(W * 0.52 / COLS)));
       const bW  = cs * COLS, bH = cs * ROWS;
-      const myX = MARG, myY = LABEL_H + MARG;
 
-      const remW = W - myX - bW - MARG * 3;
-      const csO  = Math.max(4, Math.floor(remW / COLS));
+      const holdColW = Math.round(cs * 3);        // left column: HOLD + NEXT panels
+      const myX  = MARG + holdColW;               // my board starts after hold column
+      const myY  = HOME_H + LABEL_H + MARG;
+
+      // Opp board fills remaining width
+      const remW = W - MARG - holdColW - bW - MARG * 2;
+      const csO  = Math.max(6, Math.floor(remW / COLS));
       const oW   = csO * COLS, oH = csO * ROWS;
       const oppX = myX + bW + MARG * 2, oppY = myY;
 
@@ -219,25 +226,63 @@ export default function OnlineTetrisGame({ socket, room, opponentName }) {
 
       // "YOU" label
       ctx.save();
-      ctx.font = `bold ${Math.max(9, cs * 0.52)}px Orbitron, sans-serif`;
+      ctx.font = `bold ${Math.max(9, cs * 0.5)}px Orbitron, sans-serif`;
       ctx.fillStyle = '#00e5ff'; ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 8;
       ctx.textAlign = 'center';
-      ctx.fillText('YOU', myX + bW / 2, LABEL_H - 2);
+      ctx.fillText('YOU', myX + bW / 2, HOME_H + LABEL_H - 3);
       ctx.restore();
 
       if (s.status === 'dead' && !resultRef.current) {
         ctx.save();
         ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(myX, myY, bW, bH);
         ctx.fillStyle = '#ff2d78'; ctx.textAlign = 'center';
-        const df = Math.max(12, cs * 0.9);
+        const df = Math.max(12, cs * 0.85);
         ctx.font = `bold ${df}px Orbitron, sans-serif`;
-        ctx.fillText('DIED',      myX + bW / 2, myY + bH / 2 - df * 0.6);
+        ctx.fillText('DIED',       myX + bW / 2, myY + bH / 2 - df * 0.6);
         ctx.fillText('SPECTATING', myX + bW / 2, myY + bH / 2 + df * 0.7);
         ctx.restore();
       }
 
-      // My stats row below my board
-      const stY = myY + bH + 6;
+      // ── Hold panel (left column, top) ──────────────────────────────────────
+      const holdPnW = holdColW - 2;
+      const holdPnH = Math.round(cs * 3.6);
+      ctx.save();
+      ctx.fillStyle = 'rgba(4,0,18,0.72)';
+      ctx.strokeStyle = 'rgba(194,0,255,0.30)';
+      ctx.lineWidth = 1;
+      ctx.fillRect(MARG, myY, holdPnW, holdPnH);
+      ctx.strokeRect(MARG, myY, holdPnW, holdPnH);
+      ctx.restore();
+      ctx.save();
+      ctx.font = `bold ${Math.max(7, cs * 0.30)}px Orbitron, sans-serif`;
+      ctx.fillStyle = '#c200ff'; ctx.shadowColor = '#c200ff'; ctx.shadowBlur = 6;
+      ctx.textAlign = 'center';
+      ctx.fillText('HOLD', MARG + holdPnW / 2, myY + cs * 0.62);
+      ctx.restore();
+      if (s.hold)
+        drawMini(ctx, PIECES[s.hold].shape, s.hold, MARG, myY + cs * 0.72, holdPnW, holdPnH - cs * 0.72, cs * 0.62);
+
+      // ── Next panel (left column, below hold) ───────────────────────────────
+      const nextY   = myY + holdPnH + MARG;
+      const nextPnH = Math.round(cs * 3.6);
+      ctx.save();
+      ctx.fillStyle = 'rgba(4,0,18,0.72)';
+      ctx.strokeStyle = 'rgba(0,229,255,0.25)';
+      ctx.lineWidth = 1;
+      ctx.fillRect(MARG, nextY, holdPnW, nextPnH);
+      ctx.strokeRect(MARG, nextY, holdPnW, nextPnH);
+      ctx.restore();
+      ctx.save();
+      ctx.font = `bold ${Math.max(7, cs * 0.30)}px Orbitron, sans-serif`;
+      ctx.fillStyle = '#00e5ff'; ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 6;
+      ctx.textAlign = 'center';
+      ctx.fillText('NEXT', MARG + holdPnW / 2, nextY + cs * 0.62);
+      ctx.restore();
+      if (s.next)
+        drawMini(ctx, PIECES[s.next].shape, s.next, MARG, nextY + cs * 0.72, holdPnW, nextPnH - cs * 0.72, cs * 0.62);
+
+      // ── My stats row below board ───────────────────────────────────────────
+      const stY = myY + bH + 5;
       [
         { label: 'SCORE', value: s.score, color: '#ffe066' },
         { label: 'LVL',   value: s.level, color: '#ff2d78' },
@@ -246,16 +291,16 @@ export default function OnlineTetrisGame({ socket, room, opponentName }) {
         const sw = bW / 3, tx = myX + i * sw + sw / 2;
         ctx.save();
         ctx.textAlign = 'center';
-        ctx.font = `bold ${Math.max(7, cs * 0.28)}px Orbitron, sans-serif`;
+        ctx.font = `bold ${Math.max(6, cs * 0.25)}px Orbitron, sans-serif`;
         ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 4;
-        ctx.fillText(label, tx, stY + 11);
-        ctx.font = `bold ${Math.max(9, cs * 0.42)}px Orbitron, sans-serif`;
+        ctx.fillText(label, tx, stY + 9);
+        ctx.font = `bold ${Math.max(8, cs * 0.38)}px Orbitron, sans-serif`;
         ctx.fillStyle = '#fff'; ctx.shadowColor = color; ctx.shadowBlur = 8;
-        ctx.fillText(String(value), tx, stY + 26);
+        ctx.fillText(String(value), tx, stY + 22);
         ctx.restore();
       });
 
-      // ── Opp board (mini) ──────────────────────────────────────────────────
+      // ── Opp board (mini, right side) ──────────────────────────────────────
       ctx.fillStyle = 'rgba(4,0,18,0.85)';
       ctx.fillRect(oppX, oppY, oW, oH);
       ctx.strokeStyle = 'rgba(255,45,120,0.30)';
@@ -279,8 +324,8 @@ export default function OnlineTetrisGame({ socket, room, opponentName }) {
         }
 
         // Opp stats below opp board
-        const oStY = oppY + oH + 6;
-        const oFs  = Math.max(7, csO * 0.44);
+        const oStY = oppY + oH + 5;
+        const oFs  = Math.max(6, csO * 0.42);
         [
           { label: 'SCR', value: opp.score, color: '#ffe066' },
           { label: 'LVL', value: opp.level, color: '#ff2d78' },
@@ -290,24 +335,24 @@ export default function OnlineTetrisGame({ socket, room, opponentName }) {
           ctx.textAlign = 'center';
           ctx.font = `bold ${oFs}px Orbitron, sans-serif`;
           ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 3;
-          ctx.fillText(`${label}:${value}`, oppX + oW / 2, oStY + i * (oFs + 5) + oFs);
+          ctx.fillText(`${label}:${value}`, oppX + oW / 2, oStY + i * (oFs + 4) + oFs);
           ctx.restore();
         });
       }
 
       // Opp name label
       ctx.save();
-      ctx.font = `bold ${Math.max(8, csO * 0.62)}px Orbitron, sans-serif`;
+      ctx.font = `bold ${Math.max(7, csO * 0.6)}px Orbitron, sans-serif`;
       ctx.fillStyle = '#ff2d78'; ctx.shadowColor = '#ff2d78'; ctx.shadowBlur = 6;
       ctx.textAlign = 'center';
-      ctx.fillText(opponentName.substring(0, 9).toUpperCase(), oppX + oW / 2, LABEL_H - 2);
+      ctx.fillText(opponentName.substring(0, 9).toUpperCase(), oppX + oW / 2, HOME_H + LABEL_H - 3);
       ctx.restore();
 
       if (opp && opp.status === 'dead' && !resultRef.current) {
         ctx.save();
         ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(oppX, oppY, oW, oH);
         ctx.fillStyle = '#ff2d78'; ctx.textAlign = 'center';
-        ctx.font = `bold ${Math.max(8, csO * 0.7)}px Orbitron, sans-serif`;
+        ctx.font = `bold ${Math.max(8, csO * 0.65)}px Orbitron, sans-serif`;
         ctx.fillText('DIED', oppX + oW / 2, oppY + oH / 2);
         ctx.restore();
       }
