@@ -43,5 +43,6 @@
   "duck": "DUCK",
   "move-paddle": "MOVE",
   "player-1": "PLAYER 1",
-  "player-2": "PLAYER 2"
+  "player-2": "PLAYER 2",
+  "launch": "LAUNCH"
 }
