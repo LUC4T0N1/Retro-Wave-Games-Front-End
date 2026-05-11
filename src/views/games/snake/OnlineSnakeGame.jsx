@@ -178,7 +178,7 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
 
     if (s.lvlFlash > 0 && !isOpp) {
       ctx.globalAlpha = Math.min(1, s.lvlFlash * 2);
-      ctx.fillStyle = '#cc00ff'; ctx.shadowColor = '#cc00ff'; ctx.shadowBlur = 28;
+      ctx.fillStyle = '#ffffffff'; ctx.shadowColor = '#ffffffff'; ctx.shadowBlur = 28;
       ctx.font = `bold ${Math.round(CELL * 1.2)}px Orbitron, sans-serif`;
       ctx.textAlign = 'center';
       ctx.fillText(`LEVEL ${s.level}!`, boardW / 2, boardH / 2);

@@ -6,9 +6,9 @@ import RetroGrid from '../../../components/shared/RetroGrid';
 import isMobile from '../../../utils/isMobile';
 import SnakeMobileControls from './SnakeMobileControls';
 import { useSnake } from '../../../controllers/snake/useSnake';
-import { 
-  COLS, ROWS, FOODS_PER_LEVEL, 
-  randomFood, getMoveInterval, lp, saveBest, getBest 
+import {
+  COLS, ROWS, FOODS_PER_LEVEL,
+  randomFood, getMoveInterval, lp, saveBest, getBest
 } from '../../../models/snake/snakeModel';
 
 function fillRRect(ctx, x, y, w, h, r) {
@@ -27,9 +27,9 @@ export default function SnakeGame() {
   const canvasRef = useRef(null);
   const animRef = useRef(null);
   const lastTRef = useRef(0);
-  const { 
-    stateRef, ui, setUi, lbVisible, setLbVisible, 
-    sessionToken, restart, changeDirection 
+  const {
+    stateRef, ui, setUi, lbVisible, setLbVisible,
+    sessionToken, restart, changeDirection
   } = useSnake();
 
   const CELL = isMobile ? Math.floor(Math.min(window.innerWidth * 0.95, 400) / COLS) : 24;
@@ -115,7 +115,7 @@ export default function SnakeGame() {
 
       if (s.lvlFlash > 0) {
         ctx.globalAlpha = Math.min(1, s.lvlFlash * 2);
-        ctx.fillStyle = '#cc00ff'; ctx.shadowColor = '#cc00ff'; ctx.shadowBlur = 28;
+        ctx.fillStyle = '#ffffffff'; ctx.shadowColor = '#ffffffff'; ctx.shadowBlur = 28;
         ctx.font = `bold ${Math.round(C * 1.2)}px Orbitron, sans-serif`;
         ctx.textAlign = 'center';
         ctx.fillText(`LEVEL ${s.level}!`, canvas.width / 2, canvas.height / 2);
@@ -197,7 +197,7 @@ export default function SnakeGame() {
           color: '#fff', letterSpacing: '0.08em', padding: '0 4px', boxSizing: 'border-box',
         }}>
           <div><span style={{ color: '#00ffcc', textShadow: '0 0 10px #00ffcc' }}>SCORE </span><span>{ui.score}</span></div>
-          <div style={{ color: '#cc00ff', textShadow: '0 0 10px #cc00ff' }}>LVL {ui.level}</div>
+          <div style={{ color: '#ffffffff', textShadow: '0 0 10px #ffffffff' }}>LVL {ui.level}</div>
           <div><span style={{ color: '#ffe066', textShadow: '0 0 8px #ffcc00' }}>BEST </span><span>{ui.best}</span></div>
         </div>
         <div style={{ border: '2px solid rgba(0,255,180,0.30)', borderRadius: 4, boxShadow: '0 0 32px rgba(0,255,160,0.16), inset 0 0 24px rgba(0,0,40,0.85)', overflow: 'hidden' }}>
