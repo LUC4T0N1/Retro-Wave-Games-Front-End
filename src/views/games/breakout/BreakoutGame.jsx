@@ -5,9 +5,9 @@ import isMobile from '../../../utils/isMobile';
 import HomeButton from '../../../components/shared/HomeButton';
 import RetroGrid from '../../../components/shared/RetroGrid';
 import { useBreakout } from '../../../controllers/breakout/useBreakout';
-import { 
-  BASE_W, BASE_H, BALL_R, LIVES_START, 
-  getBallSpeed, getPaddleW, getPaddleY, buildState 
+import {
+  BASE_W, BASE_H, BALL_R, LIVES_START,
+  getBallSpeed, getPaddleW, getPaddleY, buildState
 } from '../../../models/breakout/breakoutModel';
 
 export default function BreakoutGame() {
@@ -18,9 +18,9 @@ export default function BreakoutGame() {
   const trailRef = useRef([]);
   const lbVisibleRef = useRef(false);
 
-  const { 
-    stateRef, keysRef, ui, setUi, lbVisible, setLbVisible, 
-    sessionToken, syncUi, startGame, requestSession 
+  const {
+    stateRef, keysRef, ui, setUi, lbVisible, setLbVisible,
+    sessionToken, syncUi, startGame, requestSession
   } = useBreakout();
 
   // When gameover: fetch a fresh session token, THEN show leaderboard
@@ -108,7 +108,7 @@ export default function BreakoutGame() {
       <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
       <HomeButton />
       <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '21px 24px 0', boxSizing: 'border-box', position: 'relative', zIndex: 10 }}><span style={{ color: '#ff2d78', fontFamily: "'Courier New', monospace", fontSize: 14, letterSpacing: 1, textShadow: '0 0 8px #ff2d78' }}>BEST {ui.best}</span></div>
-      <div style={{ display: 'flex', gap: 28, alignItems: 'center', padding: '8px 0 6px', marginTop: isMobile ? 45 : 0, position: 'relative', zIndex: 10 }}><span style={{ color: '#00ffcc', fontFamily: "'Courier New', monospace", fontSize: 15, textShadow: '0 0 8px #00ffcc' }}>SCORE {ui.score}</span><span style={{ color: '#cc00ff', fontFamily: "'Courier New', monospace", fontSize: 15, textShadow: '0 0 8px #cc00ff' }}>LV {ui.level}</span><span style={{ color: '#ff2d78', fontFamily: "'Courier New', monospace", fontSize: 18, textShadow: '0 0 10px #ff2d78', letterSpacing: 3 }}>{'♥'.repeat(ui.lives)}</span></div>
+      <div style={{ display: 'flex', gap: 28, alignItems: 'center', padding: '8px 0 6px', marginTop: isMobile ? 45 : 0, position: 'relative', zIndex: 10 }}><span style={{ color: '#00ffcc', fontFamily: "'Courier New', monospace", fontSize: 15, textShadow: '0 0 8px #00ffcc' }}>SCORE {ui.score}</span><span style={{ color: '#ffffffff', fontFamily: "'Courier New', monospace", fontSize: 15, textShadow: '0 0 8px #cc00ff' }}>LV {ui.level}</span><span style={{ color: '#ff2d78', fontFamily: "'Courier New', monospace", fontSize: 18, textShadow: '0 0 10px #ff2d78', letterSpacing: 3 }}>{'♥'.repeat(ui.lives)}</span></div>
       <div style={{ position: 'relative', zIndex: 10, cursor: 'none' }}><canvas ref={canvasRef} onClick={() => !lbVisibleRef.current && launch()} onMouseMove={(e) => handleMove((e.clientX - canvasRef.current.getBoundingClientRect().left) / scaleRef.current)} onTouchMove={(e) => { e.preventDefault(); handleMove((e.touches[0].clientX - canvasRef.current.getBoundingClientRect().left) / scaleRef.current); }} onTouchStart={(e) => { handleMove((e.touches[0].clientX - canvasRef.current.getBoundingClientRect().left) / scaleRef.current); launch(); }} style={{ display: 'block', borderRadius: 12, touchAction: 'none' }} /></div>
       <Leaderboard apiUrl={`${process.env.REACT_APP_SERVER_URL}/leaderboard/breakout`} score={ui.score} sessionToken={sessionToken} onPlayAgain={startGame} visible={lbVisible} />
 

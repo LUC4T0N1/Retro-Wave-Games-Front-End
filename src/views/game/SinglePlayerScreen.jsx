@@ -134,7 +134,7 @@ function ScoreBar({ score, lang }) {
   const drawLabel = lang === 'pt' ? 'EMPATES' : 'DRAWS';
   return (
     <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
-      {[['X', '#00e5ff'], ['O', '#ff2d78']].map(([p, c]) => (
+      {[['X', '#00e5ff'], ['O', '#ffffffff']].map(([p, c]) => (
         <div key={p} style={{ textAlign: 'center' }}>
           <div style={{
             fontFamily: "'Orbitron', sans-serif", fontSize: 11,
@@ -151,9 +151,9 @@ function ScoreBar({ score, lang }) {
       <div style={{ textAlign: 'center' }}>
         <div style={{
           fontFamily: "'Orbitron', sans-serif", fontSize: 11,
-          letterSpacing: '0.2em', color: '#ffffff55', marginBottom: 4,
+          letterSpacing: '0.2em', color: '#7700ffe5', marginBottom: 4,
         }}>{drawLabel}</div>
-        <div style={{ fontFamily: "'VT323', monospace", fontSize: 38, color: '#ffffff44', lineHeight: 1 }}>
+        <div style={{ fontFamily: "'VT323', monospace", fontSize: 38, color: '#7700ffe5', lineHeight: 1 }}>
           {score.draw || 0}
         </div>
       </div>

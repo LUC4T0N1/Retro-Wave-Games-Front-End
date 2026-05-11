@@ -65,8 +65,8 @@ export default function SnakeGame() {
       ctx.fillStyle = '#04000e';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.strokeStyle = 'rgba(0,80,160,0.10)';
-      ctx.lineWidth = 0.5;
+      ctx.strokeStyle = 'rgba(0,140,220,0.28)';
+      ctx.lineWidth = 1;
       for (let x = 0; x <= COLS; x++) {
         ctx.beginPath(); ctx.moveTo(x * C, 0); ctx.lineTo(x * C, ROWS * C); ctx.stroke();
       }

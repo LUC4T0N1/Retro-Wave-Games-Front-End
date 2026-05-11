@@ -5,10 +5,10 @@ import HomeButton from '../../../components/shared/HomeButton';
 import RetroGrid from '../../../components/shared/RetroGrid';
 import ControlsLegend from '../../../components/shared/ControlsLegend';
 import { usePong } from '../../../controllers/pong/usePong';
-import { 
-  LW, LH, BALL_R, PAD_W, PAD_H, PAD_MARGIN, WIN_SCORE, 
-  INIT_SPEED, MAX_SPEED, SPD_PER_HIT, COUNTDOWN_SEC, 
-  PLAYER_SPD, MAX_BOUNCE_ANGLE, AI_CFG, newBall 
+import {
+  LW, LH, BALL_R, PAD_W, PAD_H, PAD_MARGIN, WIN_SCORE,
+  INIT_SPEED, MAX_SPEED, SPD_PER_HIT, COUNTDOWN_SEC,
+  PLAYER_SPD, MAX_BOUNCE_ANGLE, AI_CFG, newBall
 } from '../../../models/pong/pongModel';
 
 export default function PongGame() {
@@ -107,10 +107,10 @@ export default function PongGame() {
             <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 10, color: 'rgba(0,229,255,0.6)', letterSpacing: '0.1em' }}>{isLocal ? 'P1' : 'YOU'}</div>
             <div style={{ fontFamily: "'VT323', monospace", fontSize: 48, color: '#00e5ff', textShadow: '0 0 15px rgba(0,229,255,0.6)', lineHeight: 1 }}>{ui.pScore}</div>
           </div>
-          <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 9, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.2em' }}>VS</div>
+          <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 9, color: 'rgba(255, 255, 255, 0.98)', letterSpacing: '0.2em' }}>VS</div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 10, color: 'rgba(255,45,120,0.6)', letterSpacing: '0.1em' }}>{isLocal ? 'P2' : 'CPU'}</div>
-            <div style={{ fontFamily: "'VT323', monospace", fontSize: 48, color: '#ff2d78', textShadow: '0 0 15px rgba(255,45,120,0.6)', lineHeight: 1 }}>{ui.aScore}</div>
+            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 10, color: '#7f00e7ff', letterSpacing: '0.1em' }}>{isLocal ? 'P2' : 'CPU'}</div>
+            <div style={{ fontFamily: "'VT323', monospace", fontSize: 48, color: '#7f00e7ff', textShadow: '0 0 15px #7f00e7ff', lineHeight: 1 }}>{ui.aScore}</div>
           </div>
         </div>
 

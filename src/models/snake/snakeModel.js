@@ -14,7 +14,7 @@ export function randomFood(snake) {
 }
 
 export function getMoveInterval(level) {
-  return Math.max(0.065, 0.13 - (level - 1) * 0.007);
+  return Math.max(0.08, 0.20 - (level - 1) * 0.01);
 }
 
 export function buildState(level = 1, score = 0) {

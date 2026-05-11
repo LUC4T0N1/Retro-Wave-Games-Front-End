@@ -74,32 +74,6 @@ export default function InfinityRunGame() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
-    function drawBg(tick) {
-      const sky = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
-      sky.addColorStop(0, '#030010'); sky.addColorStop(0.35, '#0e0035');
-      sky.addColorStop(0.65, '#55006a'); sky.addColorStop(0.85, '#cc0062'); sky.addColorStop(1, '#e6006c');
-      ctx.fillStyle = sky; ctx.fillRect(0, 0, LW, GROUND_Y);
-
-      const seeds = [17,53,89,131,173,211,257,313,379,431,499,563,631,709,787,863,941,1019,1097,1181,1259,1327];
-      seeds.forEach((s, i) => {
-        const x = (s * 37 + i * 200) % LW, y = (s * 13 + i * 50) % (GROUND_Y * 0.62);
-        const r = s % 3 === 0 ? 1.5 : 0.8;
-        const tw = 0.4 + 0.6 * Math.abs(Math.sin(tick * 0.017 + s * 0.1));
-        ctx.save(); ctx.globalAlpha = tw * 0.85; ctx.fillStyle = s % 5 === 0 ? '#e0c8ff' : '#fff';
-        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-      });
-
-      const sx = LW * 0.5, sy = GROUND_Y * 0.68, sr = 38;
-      ctx.save(); ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.clip();
-      const sg = ctx.createLinearGradient(sx, sy - sr, sx, sy + sr);
-      sg.addColorStop(0, '#ffee00'); sg.addColorStop(0.25, '#ff8800'); sg.addColorStop(0.55, '#ff2222'); sg.addColorStop(1, '#aa0044');
-      ctx.fillStyle = sg; ctx.fillRect(sx - sr, sy - sr, sr * 2, sr * 2);
-      for (let i = 0; i < 8; i++) {
-        const ly = sy + (i / 8) * sr * 0.9; ctx.fillStyle = `rgba(4,0,10,${0.32 + i * 0.055})`; ctx.fillRect(sx - sr, ly, sr * 2, 5 + i * 0.5);
-      }
-      ctx.restore();
-    }
-
     function drawGround(dist) {
       const gg = ctx.createLinearGradient(0, GROUND_Y, 0, LH);
       gg.addColorStop(0, '#15003e'); gg.addColorStop(1, '#060018');
@@ -268,7 +242,7 @@ export default function InfinityRunGame() {
       if (!s) { animRef.current = requestAnimationFrame(tick); return; }
       update(dt, s);
       ctx.clearRect(0, 0, LW, LH);
-      drawBg(s.tick); drawGround(s.dist);
+      drawGround(s.dist);
       s.obstacles.forEach(o => drawObstacle(o, s.tick));
       drawMonkey(s.monkey);
       if (s.status === 'dead') { ctx.save(); ctx.globalAlpha = 0.22; ctx.fillStyle = '#ff0044'; ctx.fillRect(0, 0, LW, LH); ctx.restore(); }

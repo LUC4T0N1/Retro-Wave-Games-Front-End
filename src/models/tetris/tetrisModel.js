@@ -22,7 +22,7 @@ export const PIECES = {
 
 export const PIECE_KEYS = Object.keys(PIECES);
 export const SCORE_TABLE = [0, 100, 300, 500, 800];
-export const LEVEL_SPEED = [800, 720, 630, 550, 470, 380, 300, 220, 130, 100, 80];
+export const LEVEL_SPEED = [800, 720, 640, 560, 490, 420, 360, 300, 260, 230, 200];
 
 export function rotate(shape) {
   const N = shape.length;
