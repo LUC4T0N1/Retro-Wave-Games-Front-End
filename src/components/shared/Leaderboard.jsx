@@ -34,7 +34,7 @@ function Leaderboard({ apiUrl, score, sessionToken, onPlayAgain, visible }) {
       const rows = json.data || [];
       setData(rows);
       setPage(p);
-      setHasMore(rows.length === 20);
+      setHasMore(rows.length === 10);
     } catch {
       setError('Erro ao carregar.');
     } finally {
@@ -276,7 +276,7 @@ function Leaderboard({ apiUrl, score, sessionToken, onPlayAgain, visible }) {
             </thead>
             <tbody>
               {data.map((row, idx) => {
-                const rank = (page - 1) * 20 + idx + 1;
+                const rank = (page - 1) * 10 + idx + 1;
                 const medalColor = rank === 1 ? '#ffe066' : rank === 2 ? '#b0b8c8' : rank === 3 ? '#ff8844' : null;
                 return (
                   <tr key={row.id} style={{
