@@ -14,6 +14,7 @@ const PLAYER_SPD = 7.5;
 
 const LEFT_PAD_X  = PAD_MARGIN;
 const RIGHT_PAD_X = LW - PAD_MARGIN - PAD_W;
+const PAD_H_HIT   = PAD_H + 6;  // must match server
 
 function initState() {
   return {
@@ -25,19 +26,33 @@ function initState() {
   };
 }
 
-// Sub-stepped extrapolation so wall bounces are correct between server ticks
-function stepBall(b, dt) {
+// Sub-stepped extrapolation so wall and paddle bounces are correct between server ticks
+function stepBall(b, dt, leftPadY, rightPadY) {
   b.x += b.vx * dt;
   b.y += b.vy * dt;
   if (b.y - BALL_R < 0)  { b.y = BALL_R;      b.vy =  Math.abs(b.vy); }
   if (b.y + BALL_R > LH) { b.y = LH - BALL_R; b.vy = -Math.abs(b.vy); }
+  const lpFace = LEFT_PAD_X + PAD_W;
+  const rpFace = RIGHT_PAD_X;
+  if (b.vx < 0 && b.x - BALL_R <= lpFace) {
+    const pt = leftPadY - (PAD_H_HIT - PAD_H) / 2;
+    if (b.y + BALL_R >= pt && b.y - BALL_R <= pt + PAD_H_HIT) {
+      b.x = lpFace + BALL_R + 1; b.vx = Math.abs(b.vx);
+    }
+  }
+  if (b.vx > 0 && b.x + BALL_R >= rpFace) {
+    const pt = rightPadY - (PAD_H_HIT - PAD_H) / 2;
+    if (b.y + BALL_R >= pt && b.y - BALL_R <= pt + PAD_H_HIT) {
+      b.x = rpFace - BALL_R - 1; b.vx = -Math.abs(b.vx);
+    }
+  }
 }
 
-function extrapolateBall(rb, ageSec) {
+function extrapolateBall(rb, ageSec, leftPadY, rightPadY) {
   const b = { ...rb };
   const steps = Math.max(1, Math.ceil(ageSec * 120));
   const dt = (ageSec * 60) / steps;
-  for (let i = 0; i < steps; i++) stepBall(b, dt);
+  for (let i = 0; i < steps; i++) stepBall(b, dt, leftPadY, rightPadY);
   return b;
 }
 
@@ -278,8 +293,10 @@ function OnlinePongGame({ socket, room, side, opponentName }) {
       // Ball: take the latest server snapshot and dead-reckon to "now"
       const rb = remoteBallRef.current;
       if (rb) {
-        const ageSec = Math.min((performance.now() - rb.ts) / 1000, 0.05);
-        const pred   = ageSec > 0.001 ? extrapolateBall(rb, ageSec) : rb;
+        const ageSec  = Math.min((performance.now() - rb.ts) / 1000, 0.033);
+        const leftY   = isHost ? s.myY : oppPadVisual.current;
+        const rightY  = isHost ? oppPadVisual.current : s.myY;
+        const pred    = ageSec > 0.001 ? extrapolateBall(rb, ageSec, leftY, rightY) : rb;
         s.ball.x    = pred.x;
         s.ball.y    = pred.y;
         s.ball.vx   = rb.vx;
