@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import HomeButton from '../../../components/shared/HomeButton';
 import RetroGrid from '../../../components/shared/RetroGrid';
 import isMobile from '../../../utils/isMobile';
@@ -87,42 +86,43 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
   const [result, setResult]               = useState(null);
   const [waitingRestart, setWaitingRestart] = useState(false);
 
-  const CELL = isMobile ? Math.floor(Math.min(window.innerWidth * 0.42, 200) / COLS) : 20;
+  const CELL = isMobile ? 20 : 20;
   const boardW = CELL * COLS;
   const boardH = CELL * ROWS;
 
   // ── Drawing ──────────────────────────────────────────────────────────────
-  const drawBoard = useCallback((ctx, s, ox, oy, t, isOpp) => {
+  const drawBoard = useCallback((ctx, s, ox, oy, t, isOpp, cell) => {
+    const bW = cell * COLS, bH = cell * ROWS;
     ctx.save();
     ctx.translate(ox, oy);
 
     ctx.fillStyle = '#04000e';
-    ctx.fillRect(0, 0, boardW, boardH);
+    ctx.fillRect(0, 0, bW, bH);
 
     ctx.strokeStyle = isOpp ? 'rgba(255,45,120,0.15)' : 'rgba(0,255,204,0.10)';
     ctx.lineWidth = 0.5;
     for (let x = 0; x <= COLS; x++) {
-      ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, ROWS * CELL); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x * cell, 0); ctx.lineTo(x * cell, ROWS * cell); ctx.stroke();
     }
     for (let y = 0; y <= ROWS; y++) {
-      ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(COLS * CELL, y * CELL); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, y * cell); ctx.lineTo(COLS * cell, y * cell); ctx.stroke();
     }
 
     ctx.strokeStyle = isOpp ? 'rgba(255,45,120,0.40)' : 'rgba(0,255,204,0.40)';
     ctx.lineWidth = 2;
-    ctx.strokeRect(0, 0, boardW, boardH);
+    ctx.strokeRect(0, 0, bW, bH);
 
     // Food
     if (s.food) {
       const pulse = 0.72 + 0.28 * Math.sin(performance.now() * 0.006);
-      const fcx = s.food.x * CELL + CELL / 2, fcy = s.food.y * CELL + CELL / 2;
+      const fcx = s.food.x * cell + cell / 2, fcy = s.food.y * cell + cell / 2;
       ctx.globalAlpha = pulse;
-      ctx.fillStyle = isOpp ? '#ff2d78' : '#ffe066'; 
+      ctx.fillStyle = isOpp ? '#ff2d78' : '#ffe066';
       ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 16;
-      ctx.beginPath(); ctx.arc(fcx, fcy, CELL * 0.36, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(fcx, fcy, cell * 0.36, 0, Math.PI * 2); ctx.fill();
       ctx.globalAlpha = 1; ctx.shadowBlur = 0;
       ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 1.2;
-      const fh = CELL * 0.14;
+      const fh = cell * 0.14;
       ctx.beginPath(); ctx.moveTo(fcx - fh, fcy - fh); ctx.lineTo(fcx + fh, fcy + fh); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(fcx + fh, fcy - fh); ctx.lineTo(fcx - fh, fcy + fh); ctx.stroke();
     }
@@ -131,10 +131,9 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
     const n = s.snake.length;
     for (let i = n - 1; i >= 0; i--) {
       const seg = s.snake[i];
-      // se opp, nao interpolar pq nao temos framerate preciso de la, usamos as posicoes exatas (ou poderiamos prever)
       const interT = isOpp ? 1 : Math.min(1, Math.max(0, t));
-      const rx = lp(seg.prevX ?? seg.x, seg.x, interT) * CELL + CELL / 2;
-      const ry = lp(seg.prevY ?? seg.y, seg.y, interT) * CELL + CELL / 2;
+      const rx = lp(seg.prevX ?? seg.x, seg.x, interT) * cell + cell / 2;
+      const ry = lp(seg.prevY ?? seg.y, seg.y, interT) * cell + cell / 2;
       const isHead = i === 0;
       const ratio = n > 1 ? i / (n - 1) : 0;
 
@@ -151,20 +150,20 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
         col = `rgb(${cr},${cg},${cb})`;
       }
 
-      const pad = isHead ? 1.5 : 2.5;
-      const sz = CELL - pad * 2;
+      const pad = isHead ? 1 : (cell <= 8 ? 1 : 2);
+      const sz = Math.max(2, cell - pad * 2);
       const rad = isHead ? sz * 0.32 : sz * 0.22;
 
       ctx.fillStyle = col;
       ctx.shadowColor = isHead ? (isOpp ? '#ff2d78' : '#00ffcc') : col;
-      ctx.shadowBlur = isHead ? 14 : Math.max(2, (1 - ratio) * 8);
+      ctx.shadowBlur = isHead ? 10 : Math.max(1, (1 - ratio) * 6);
       fillRRect(ctx, rx - sz / 2, ry - sz / 2, sz, sz, rad);
 
-      if (isHead) {
+      if (isHead && sz >= 4) {
         ctx.shadowBlur = 0;
         ctx.fillStyle = '#001a10';
         const lookDir = (!isOpp && s.dirQueue?.length > 0) ? s.dirQueue[0] : s.dir;
-        const eyeR = sz * 0.13;
+        const eyeR = Math.max(0.8, sz * 0.13);
         const fwd = sz * 0.16, side = sz * 0.20;
         ctx.beginPath();
         ctx.arc(rx + lookDir.dx * fwd - lookDir.dy * side, ry + lookDir.dy * fwd + lookDir.dx * side, eyeR, 0, Math.PI * 2);
@@ -179,14 +178,14 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
     if (s.lvlFlash > 0 && !isOpp) {
       ctx.globalAlpha = Math.min(1, s.lvlFlash * 2);
       ctx.fillStyle = '#ffffffff'; ctx.shadowColor = '#ffffffff'; ctx.shadowBlur = 28;
-      ctx.font = `bold ${Math.round(CELL * 1.2)}px Orbitron, sans-serif`;
+      ctx.font = `bold ${Math.round(cell * 1.2)}px Orbitron, sans-serif`;
       ctx.textAlign = 'center';
-      ctx.fillText(`LEVEL ${s.level}!`, boardW / 2, boardH / 2);
+      ctx.fillText(`LEVEL ${s.level}!`, bW / 2, bH / 2);
       ctx.globalAlpha = 1; ctx.shadowBlur = 0;
     }
 
     ctx.restore();
-  }, [CELL, boardH, boardW]);
+  }, []);
 
   const render = useCallback(() => {
     const cv = canvasRef.current;
@@ -201,55 +200,121 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
     const opp = oppStateRef.current;
     if (!s || !opp) return;
 
-    const gap = isMobile ? 10 : 40;
-    const totalW = boardW * 2 + gap;
-    const sx = W / 2 - totalW / 2;
-    const sy = H / 2 - boardH / 2;
+    if (isMobile) {
+      // ── Mobile layout: my board large (left), opp mini (right) ─────────────
+      const HOME_H  = 48;   // clearance for home button
+      const CTRL_H  = 215;  // controls: bottom:60 + 2 rows of 60px buttons + gaps
+      const LABEL_H = 18;   // "YOU" / opp name row
+      const SCORE_H = 22;   // score+level row below my board
+      const MARG    = 4;
 
-    const myBoardX = sx;
+      // My board cell: constrained by available height and ~65% of width
+      const avH     = H - HOME_H - CTRL_H - LABEL_H - SCORE_H - MARG * 2;
+      const myCellH = Math.floor(avH / ROWS);
+      const myCellW = Math.floor((W - MARG * 3) * 0.65 / COLS);
+      const myCell  = Math.max(6, Math.min(myCellH, myCellW));
+      const myBW    = myCell * COLS;
+      const myBH    = myCell * ROWS;
+
+      // Opp board: fills remaining width
+      const remW   = W - MARG * 3 - myBW;
+      const oppCell = Math.max(5, Math.floor(remW / COLS));
+      const oppBW   = oppCell * COLS;
+      const oppBH   = oppCell * ROWS;
+
+      const myX    = MARG;
+      const oppX   = MARG + myBW + MARG;
+      const boardY = HOME_H + LABEL_H + MARG;
+
+      // Labels
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.font = `bold ${Math.max(9, myCell * 0.5)}px Orbitron, sans-serif`;
+      ctx.fillStyle = '#00ffcc'; ctx.shadowColor = '#00ffcc'; ctx.shadowBlur = 8;
+      ctx.fillText('YOU', myX + myBW / 2, HOME_H + LABEL_H - 2);
+      ctx.font = `bold ${Math.max(7, oppCell * 0.55)}px Orbitron, sans-serif`;
+      ctx.fillStyle = '#ff2d78'; ctx.shadowColor = '#ff2d78'; ctx.shadowBlur = 6;
+      ctx.fillText(opponentName.substring(0, 9).toUpperCase(), oppX + oppBW / 2, HOME_H + LABEL_H - 2);
+      ctx.restore();
+
+      // Draw boards
+      drawBoard(ctx, s,   myX,  boardY, s.moveAccum / s.moveInterval, false, myCell);
+      drawBoard(ctx, opp, oppX, boardY, 1,                             true,  oppCell);
+
+      // Death overlays
+      if (s.status === 'dead' && !resultRef.current) {
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(myX, boardY, myBW, myBH);
+        ctx.fillStyle = '#ff2d78'; ctx.textAlign = 'center';
+        const df = Math.max(10, myCell * 0.72);
+        ctx.font = `bold ${df}px Orbitron, sans-serif`;
+        ctx.fillText('DIED',       myX + myBW / 2, boardY + myBH / 2 - df * 0.6);
+        ctx.fillText('SPECTATING', myX + myBW / 2, boardY + myBH / 2 + df * 0.7);
+      }
+      if (opp.status === 'dead' && !resultRef.current) {
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(oppX, boardY, oppBW, oppBH);
+        ctx.fillStyle = '#ff2d78'; ctx.textAlign = 'center';
+        ctx.font = `bold ${Math.max(7, oppCell * 0.65)}px Orbitron, sans-serif`;
+        ctx.fillText('DIED', oppX + oppBW / 2, boardY + oppBH / 2);
+      }
+
+      // My score + level below my board
+      const scY = boardY + myBH + 6;
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.font = `bold ${Math.max(8, myCell * 0.38)}px Orbitron, sans-serif`;
+      ctx.fillStyle = '#ffe066'; ctx.shadowColor = '#ffe066'; ctx.shadowBlur = 6;
+      ctx.fillText(`SCORE ${s.score}`, myX + myBW / 3, scY + 14);
+      ctx.fillStyle = '#00ffcc'; ctx.shadowColor = '#00ffcc';
+      ctx.fillText(`LVL ${s.level}`, myX + myBW * 0.72, scY + 14);
+
+      // Opp score below opp board
+      ctx.font = `bold ${Math.max(7, oppCell * 0.44)}px Orbitron, sans-serif`;
+      ctx.fillStyle = '#ff6699'; ctx.shadowColor = '#ff2d78'; ctx.shadowBlur = 4;
+      ctx.fillText(`${opp.score}`, oppX + oppBW / 2, boardY + oppBH + 14);
+      ctx.restore();
+
+      return;
+    }
+
+    // ── Desktop layout ──────────────────────────────────────────────────────
+    const gap    = 40;
+    const totalW = boardW * 2 + gap;
+    const sx     = W / 2 - totalW / 2;
+    const sy     = H / 2 - boardH / 2;
+    const myBoardX  = sx;
     const oppBoardX = sx + boardW + gap;
 
-    // Draw my board
-    drawBoard(ctx, s, myBoardX, sy, s.moveAccum / s.moveInterval, false);
+    drawBoard(ctx, s,   myBoardX,  sy, s.moveAccum / s.moveInterval, false, CELL);
+    drawBoard(ctx, opp, oppBoardX, sy, 1,                             true,  CELL);
+
     if (s.status === 'dead' && !resultRef.current) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
       ctx.fillRect(myBoardX, sy, boardW, boardH);
-      ctx.fillStyle = '#ff2d78';
-      ctx.textAlign = 'center';
-      ctx.font = `bold ${isMobile ? 16 : 24}px Orbitron, sans-serif`;
+      ctx.fillStyle = '#ff2d78'; ctx.textAlign = 'center';
+      ctx.font = 'bold 24px Orbitron, sans-serif';
       ctx.fillText('DIED - SPECTATING', myBoardX + boardW / 2, sy + boardH / 2);
     }
-    
-    // Draw opp board
-    drawBoard(ctx, opp, oppBoardX, sy, 1, true);
     if (opp.status === 'dead' && !resultRef.current) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
       ctx.fillRect(oppBoardX, sy, boardW, boardH);
-      ctx.fillStyle = '#ff2d78';
-      ctx.textAlign = 'center';
-      ctx.font = `bold ${isMobile ? 16 : 24}px Orbitron, sans-serif`;
+      ctx.fillStyle = '#ff2d78'; ctx.textAlign = 'center';
+      ctx.font = 'bold 24px Orbitron, sans-serif';
       ctx.fillText('OPPONENT DIED', oppBoardX + boardW / 2, sy + boardH / 2);
     }
 
-    // Draw Names & Scores
     ctx.save();
     ctx.textAlign = 'center';
-    ctx.font = `bold ${isMobile ? 12 : 16}px Orbitron, sans-serif`;
-    
-    // My Name
+    ctx.font = 'bold 16px Orbitron, sans-serif';
     ctx.fillStyle = '#00ffcc'; ctx.shadowColor = '#00ffcc'; ctx.shadowBlur = 8;
     ctx.fillText('YOU', myBoardX + boardW / 2, sy - 15);
-    // My Score
     ctx.fillStyle = '#fff'; ctx.shadowBlur = 0;
     ctx.fillText(`SCORE: ${s.score}`, myBoardX + boardW / 2, sy + boardH + 25);
-
-    // Opp Name
     ctx.fillStyle = '#ff2d78'; ctx.shadowColor = '#ff2d78'; ctx.shadowBlur = 8;
     ctx.fillText(opponentName.toUpperCase(), oppBoardX + boardW / 2, sy - 15);
-    // Opp Score
     ctx.fillStyle = '#fff'; ctx.shadowBlur = 0;
     ctx.fillText(`SCORE: ${opp.score}`, oppBoardX + boardW / 2, sy + boardH + 25);
-
     ctx.restore();
 
   }, [boardH, boardW, drawBoard, opponentName]);
