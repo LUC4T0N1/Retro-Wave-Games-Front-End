@@ -1,5 +1,7 @@
 # 🎮 Retro Wave Games — Frontend
 
+**This project is a non-commercial fan-made portfolio project inspired by classic retro games. All trademarks and game names belong to their respective owners.**
+
 [![Netlify Status](https://api.netlify.com/api/v1/badges/placeholder/deploy-status)](https://retro-wave-games.netlify.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
