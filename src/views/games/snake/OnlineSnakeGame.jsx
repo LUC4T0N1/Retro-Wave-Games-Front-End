@@ -201,78 +201,85 @@ export default function OnlineSnakeGame({ socket, room, opponentName }) {
     if (!s || !opp) return;
 
     if (isMobile) {
-      // ── Mobile layout: my board large (left), opp mini (right) ─────────────
-      const HOME_H  = 48;   // clearance for home button
-      const CTRL_H  = 215;  // controls: bottom:60 + 2 rows of 60px buttons + gaps
-      const LABEL_H = 18;   // "YOU" / opp name row
-      const SCORE_H = 22;   // score+level row below my board
-      const MARG    = 4;
+      // ── Mobile layout: my board full width (top), opp mini centered (below) ─
+      const HOME_H       = 48;   // clearance for home button
+      const CTRL_H       = 215;  // controls height at bottom
+      const MY_LABEL_H   = 18;   // "YOU" label above my board
+      const OPP_LABEL_H  = 14;   // opp name label
+      const OPP_SCORE_H  = 16;   // opp score below opp board
+      const MARG         = 4;
+      const GAP          = 6;
+      const csO          = 5;    // opp board cell size (5px → 105×105px board)
+      const OPP_TOTAL_H  = OPP_LABEL_H + csO * ROWS + OPP_SCORE_H; // ~135px
 
-      // My board cell: constrained by available height and ~65% of width
-      const avH     = H - HOME_H - CTRL_H - LABEL_H - SCORE_H - MARG * 2;
+      // My board: full width, fills remaining vertical space
+      const avH     = H - HOME_H - MY_LABEL_H - MARG - GAP - OPP_TOTAL_H - GAP - CTRL_H;
       const myCellH = Math.floor(avH / ROWS);
-      const myCellW = Math.floor((W - MARG * 3) * 0.65 / COLS);
-      const myCell  = Math.max(6, Math.min(myCellH, myCellW));
+      const myCellW = Math.floor((W - MARG * 2) / COLS);
+      const myCell  = Math.max(8, Math.min(myCellH, myCellW));
       const myBW    = myCell * COLS;
       const myBH    = myCell * ROWS;
+      const myX     = Math.floor((W - myBW) / 2);
+      const myY     = HOME_H + MY_LABEL_H + MARG;
 
-      // Opp board: fills remaining width
-      const remW   = W - MARG * 3 - myBW;
-      const oppCell = Math.max(5, Math.floor(remW / COLS));
-      const oppBW   = oppCell * COLS;
-      const oppBH   = oppCell * ROWS;
+      // Opp board: fixed small size, centered below my board
+      const oppBW   = csO * COLS;   // 105px
+      const oppBH   = csO * ROWS;   // 105px
+      const oppLblY = myY + myBH + GAP;
+      const oppY    = oppLblY + OPP_LABEL_H;
+      const oppX    = Math.floor((W - oppBW) / 2);
 
-      const myX    = MARG;
-      const oppX   = MARG + myBW + MARG;
-      const boardY = HOME_H + LABEL_H + MARG;
-
-      // Labels
+      // ── "YOU" label above my board ─────────────────────────────────────────
       ctx.save();
       ctx.textAlign = 'center';
-      ctx.font = `bold ${Math.max(9, myCell * 0.5)}px Orbitron, sans-serif`;
+      ctx.font = `bold ${Math.max(10, myCell * 0.5)}px Orbitron, sans-serif`;
       ctx.fillStyle = '#00ffcc'; ctx.shadowColor = '#00ffcc'; ctx.shadowBlur = 8;
-      ctx.fillText('YOU', myX + myBW / 2, HOME_H + LABEL_H - 2);
-      ctx.font = `bold ${Math.max(7, oppCell * 0.55)}px Orbitron, sans-serif`;
-      ctx.fillStyle = '#ff2d78'; ctx.shadowColor = '#ff2d78'; ctx.shadowBlur = 6;
-      ctx.fillText(opponentName.substring(0, 9).toUpperCase(), oppX + oppBW / 2, HOME_H + LABEL_H - 2);
+      ctx.fillText('YOU', myX + myBW / 2, HOME_H + MY_LABEL_H - 2);
       ctx.restore();
 
-      // Draw boards
-      drawBoard(ctx, s,   myX,  boardY, s.moveAccum / s.moveInterval, false, myCell);
-      drawBoard(ctx, opp, oppX, boardY, 1,                             true,  oppCell);
+      // ── My board ──────────────────────────────────────────────────────────
+      drawBoard(ctx, s, myX, myY, s.moveAccum / s.moveInterval, false, myCell);
 
-      // Death overlays
       if (s.status === 'dead' && !resultRef.current) {
         ctx.fillStyle = 'rgba(0,0,0,0.6)';
-        ctx.fillRect(myX, boardY, myBW, myBH);
+        ctx.fillRect(myX, myY, myBW, myBH);
         ctx.fillStyle = '#ff2d78'; ctx.textAlign = 'center';
-        const df = Math.max(10, myCell * 0.72);
+        const df = Math.max(12, myCell * 0.75);
         ctx.font = `bold ${df}px Orbitron, sans-serif`;
-        ctx.fillText('DIED',       myX + myBW / 2, boardY + myBH / 2 - df * 0.6);
-        ctx.fillText('SPECTATING', myX + myBW / 2, boardY + myBH / 2 + df * 0.7);
-      }
-      if (opp.status === 'dead' && !resultRef.current) {
-        ctx.fillStyle = 'rgba(0,0,0,0.6)';
-        ctx.fillRect(oppX, boardY, oppBW, oppBH);
-        ctx.fillStyle = '#ff2d78'; ctx.textAlign = 'center';
-        ctx.font = `bold ${Math.max(7, oppCell * 0.65)}px Orbitron, sans-serif`;
-        ctx.fillText('DIED', oppX + oppBW / 2, boardY + oppBH / 2);
+        ctx.fillText('DIED',       myX + myBW / 2, myY + myBH / 2 - df * 0.6);
+        ctx.fillText('SPECTATING', myX + myBW / 2, myY + myBH / 2 + df * 0.7);
       }
 
-      // My score + level below my board
-      const scY = boardY + myBH + 6;
+      // ── Opp label + mini board + score ─────────────────────────────────────
       ctx.save();
       ctx.textAlign = 'center';
-      ctx.font = `bold ${Math.max(8, myCell * 0.38)}px Orbitron, sans-serif`;
-      ctx.fillStyle = '#ffe066'; ctx.shadowColor = '#ffe066'; ctx.shadowBlur = 6;
-      ctx.fillText(`SCORE ${s.score}`, myX + myBW / 3, scY + 14);
-      ctx.fillStyle = '#00ffcc'; ctx.shadowColor = '#00ffcc';
-      ctx.fillText(`LVL ${s.level}`, myX + myBW * 0.72, scY + 14);
+      ctx.font = `bold ${Math.max(8, csO * 1.4)}px Orbitron, sans-serif`;
+      ctx.fillStyle = '#ff2d78'; ctx.shadowColor = '#ff2d78'; ctx.shadowBlur = 6;
+      ctx.fillText(
+        `${opponentName.substring(0, 12).toUpperCase()}  SCR:${opp.score}`,
+        W / 2, oppLblY + OPP_LABEL_H - 2
+      );
+      ctx.restore();
 
-      // Opp score below opp board
-      ctx.font = `bold ${Math.max(7, oppCell * 0.44)}px Orbitron, sans-serif`;
-      ctx.fillStyle = '#ff6699'; ctx.shadowColor = '#ff2d78'; ctx.shadowBlur = 4;
-      ctx.fillText(`${opp.score}`, oppX + oppBW / 2, boardY + oppBH + 14);
+      drawBoard(ctx, opp, oppX, oppY, 1, true, csO);
+
+      if (opp.status === 'dead' && !resultRef.current) {
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(oppX, oppY, oppBW, oppBH);
+        ctx.fillStyle = '#ff2d78'; ctx.textAlign = 'center';
+        ctx.font = 'bold 8px Orbitron, sans-serif';
+        ctx.fillText('DIED', oppX + oppBW / 2, oppY + oppBH / 2);
+      }
+
+      // ── My score + level (compact, below my board, above opp area) ─────────
+      ctx.save();
+      ctx.textAlign = 'center';
+      const stY = myY + myBH + GAP * 0.5;
+      ctx.font = `bold ${Math.max(9, myCell * 0.38)}px Orbitron, sans-serif`;
+      ctx.fillStyle = '#ffe066'; ctx.shadowColor = '#ffe066'; ctx.shadowBlur = 6;
+      ctx.fillText(`SCORE: ${s.score}`, myX + myBW * 0.3, stY + 11);
+      ctx.fillStyle = '#00ffcc'; ctx.shadowColor = '#00ffcc';
+      ctx.fillText(`LVL ${s.level}`, myX + myBW * 0.75, stY + 11);
       ctx.restore();
 
       return;

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import HomeButton from '../../../components/shared/HomeButton';
 import RetroGrid from '../../../components/shared/RetroGrid';
 import isMobile from '../../../utils/isMobile';
@@ -87,6 +86,8 @@ export default function OnlineBreakoutGame({ socket, room, opponentName }) {
   const oppLevelDoneRef   = useRef(false); // opponent cleared their level
   const keysRef        = useRef({});
   const scaleRef       = useRef(1);
+  const oppCanvasRef   = useRef(null);
+  const oppScaleRef    = useRef(0.15);
 
   const [result, setResult]                 = useState(null);
   const [waitingRestart, setWaitingRestart] = useState(false);
@@ -205,44 +206,77 @@ export default function OnlineBreakoutGame({ socket, room, opponentName }) {
   }, []);
 
   const render = useCallback(() => {
-    const cv = canvasRef.current;
-    if (!cv) return;
-    const ctx = cv.getContext('2d');
-    const W = cv.width, H = cv.height;
-
-    ctx.clearRect(0, 0, W, H);
-
     const s   = myStateRef.current;
     const opp = oppStateRef.current;
     if (!s || !opp) return;
 
-    const gap    = isMobile ? 10 : 40;
-    const scale  = scaleRef.current;
-    const boardW = BASE_W * scale;
-    const boardH = BASE_H * scale;
-    const totalW = boardW * 2 + gap;
-    const sx     = W / 2 - totalW / 2;
-    const sy     = H / 2 - boardH / 2 + 30;
+    if (isMobile) {
+      const myCV  = canvasRef.current;
+      const oppCV = oppCanvasRef.current;
+      if (!myCV || !oppCV) return;
+      const myCtx  = myCV.getContext('2d');
+      const oppCtx = oppCV.getContext('2d');
+      const myScale  = scaleRef.current;
+      const oppScale = oppScaleRef.current;
+      const MY_LABEL_H = 18, MY_SCORE_H = 16, OPP_LABEL_H = 14;
 
-    drawBoard(ctx, s,   sx,              sy, false, scale);
-    drawBoard(ctx, opp, sx + boardW + gap, sy, true,  scale);
+      myCtx.clearRect(0, 0, myCV.width, myCV.height);
+      oppCtx.clearRect(0, 0, oppCV.width, oppCV.height);
 
-    // Labels
-    ctx.save();
-    ctx.textAlign = 'center';
-    ctx.font = `bold ${isMobile ? 12 : 16}px Orbitron, sans-serif`;
+      drawBoard(myCtx, s, 0, MY_LABEL_H, false, myScale);
 
-    ctx.fillStyle = '#ffb852'; ctx.shadowColor = '#ffb852'; ctx.shadowBlur = 8;
-    ctx.fillText('YOU', sx + boardW / 2, sy - 14);
-    ctx.fillStyle = '#fff'; ctx.shadowBlur = 0;
-    ctx.fillText(`LV.${s.level}  SCORE: ${s.score}`, sx + boardW / 2, sy + boardH + 24);
+      myCtx.save();
+      myCtx.font = 'bold 11px Orbitron, sans-serif';
+      myCtx.fillStyle = '#ffb852'; myCtx.shadowColor = '#ffb852'; myCtx.shadowBlur = 6;
+      myCtx.textAlign = 'center';
+      myCtx.fillText('YOU', myCV.width / 2, MY_LABEL_H - 4);
+      myCtx.fillStyle = '#fff'; myCtx.shadowBlur = 0;
+      myCtx.fillText(`LV.${s.level}  SCORE: ${s.score}`, myCV.width / 2, MY_LABEL_H + BASE_H * myScale + MY_SCORE_H - 3);
+      myCtx.restore();
 
-    ctx.fillStyle = '#ff2d78'; ctx.shadowColor = '#ff2d78'; ctx.shadowBlur = 8;
-    ctx.fillText(opponentName.toUpperCase(), sx + boardW + gap + boardW / 2, sy - 14);
-    ctx.fillStyle = '#fff'; ctx.shadowBlur = 0;
-    ctx.fillText(`LV.${opp.level}  SCORE: ${opp.score}`, sx + boardW + gap + boardW / 2, sy + boardH + 24);
+      drawBoard(oppCtx, opp, 0, OPP_LABEL_H, true, oppScale);
 
-    ctx.restore();
+      oppCtx.save();
+      oppCtx.font = 'bold 9px Orbitron, sans-serif';
+      oppCtx.fillStyle = '#ff2d78'; oppCtx.shadowColor = '#ff2d78'; oppCtx.shadowBlur = 4;
+      oppCtx.textAlign = 'center';
+      oppCtx.fillText(`${opponentName.toUpperCase().substring(0, 8)}  SCR:${opp.score}`, oppCV.width / 2, OPP_LABEL_H - 2);
+      oppCtx.restore();
+
+    } else {
+      const cv = canvasRef.current;
+      if (!cv) return;
+      const ctx = cv.getContext('2d');
+      const W = cv.width, H = cv.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const gap    = 40;
+      const scale  = scaleRef.current;
+      const boardW = BASE_W * scale;
+      const boardH = BASE_H * scale;
+      const totalW = boardW * 2 + gap;
+      const sx     = W / 2 - totalW / 2;
+      const sy     = H / 2 - boardH / 2 + 30;
+
+      drawBoard(ctx, s,   sx,               sy, false, scale);
+      drawBoard(ctx, opp, sx + boardW + gap, sy, true,  scale);
+
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 16px Orbitron, sans-serif';
+
+      ctx.fillStyle = '#ffb852'; ctx.shadowColor = '#ffb852'; ctx.shadowBlur = 8;
+      ctx.fillText('YOU', sx + boardW / 2, sy - 14);
+      ctx.fillStyle = '#fff'; ctx.shadowBlur = 0;
+      ctx.fillText(`LV.${s.level}  SCORE: ${s.score}`, sx + boardW / 2, sy + boardH + 24);
+
+      ctx.fillStyle = '#ff2d78'; ctx.shadowColor = '#ff2d78'; ctx.shadowBlur = 8;
+      ctx.fillText(opponentName.toUpperCase(), sx + boardW + gap + boardW / 2, sy - 14);
+      ctx.fillStyle = '#fff'; ctx.shadowBlur = 0;
+      ctx.fillText(`LV.${opp.level}  SCORE: ${opp.score}`, sx + boardW + gap + boardW / 2, sy + boardH + 24);
+
+      ctx.restore();
+    }
   }, [drawBoard, opponentName]);
 
   // ── doLaunch: actually fire the ball ──────────────────────────────────────
@@ -330,15 +364,35 @@ export default function OnlineBreakoutGame({ socket, room, opponentName }) {
     lastTRef.current    = performance.now();
     resultRef.current   = null;
 
-    const cv = canvasRef.current;
-
     const onResize = () => {
-      cv.width  = window.innerWidth;
-      cv.height = window.innerHeight;
-      const gap  = isMobile ? 10 : 40;
-      const maxW = (window.innerWidth - gap) / 2 * 0.96;
-      const maxH = window.innerHeight * 0.8;
-      scaleRef.current = Math.min(maxW / BASE_W, maxH / BASE_H, 1);
+      const myCV  = canvasRef.current;
+      const oppCV = oppCanvasRef.current;
+      if (isMobile) {
+        const W = window.innerWidth, H = window.innerHeight;
+        const HOME_H = 48, MY_LABEL_H = 18, MY_SCORE_H = 16, OPP_LABEL_H = 14, GAP = 6, MARG = 4;
+        const OPP_SCALE = 0.15;
+        const oppAreaH = OPP_LABEL_H + BASE_H * OPP_SCALE;
+        const avH = H - HOME_H - MY_LABEL_H - MY_SCORE_H - GAP - oppAreaH - MARG;
+        const myScale = Math.min((W - MARG * 2) / BASE_W, avH / BASE_H);
+        scaleRef.current = myScale;
+        oppScaleRef.current = OPP_SCALE;
+        if (myCV) {
+          myCV.width  = Math.round(BASE_W * myScale);
+          myCV.height = Math.round(BASE_H * myScale + MY_LABEL_H + MY_SCORE_H);
+        }
+        if (oppCV) {
+          oppCV.width  = Math.round(BASE_W * OPP_SCALE);
+          oppCV.height = Math.round(BASE_H * OPP_SCALE + OPP_LABEL_H);
+        }
+      } else {
+        if (myCV) {
+          myCV.width  = window.innerWidth;
+          myCV.height = window.innerHeight;
+        }
+        const maxW = (window.innerWidth - 40) / 2 * 0.96;
+        const maxH = window.innerHeight * 0.8;
+        scaleRef.current = Math.min(maxW / BASE_W, maxH / BASE_H, 1);
+      }
     };
     onResize();
     window.addEventListener('resize', onResize);
@@ -513,11 +567,13 @@ export default function OnlineBreakoutGame({ socket, room, opponentName }) {
   const getLocalX = (clientX) => {
     const canvas = canvasRef.current;
     if (!canvas) return 0;
-    const rect   = canvas.getBoundingClientRect();
-    const scale  = scaleRef.current;
-    const gap    = isMobile ? 10 : 40;
+    const rect  = canvas.getBoundingClientRect();
+    const scale = scaleRef.current;
+    if (isMobile) {
+      return (clientX - rect.left) / scale;
+    }
     const boardW = BASE_W * scale;
-    const totalW = boardW * 2 + gap;
+    const totalW = boardW * 2 + 40;
     const sx     = canvas.width / 2 - totalW / 2;
     return (clientX - rect.left - sx) / scale;
   };
@@ -540,14 +596,33 @@ export default function OnlineBreakoutGame({ socket, room, opponentName }) {
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', background: '#000', position: 'relative' }}>
       <RetroGrid style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.8 }} />
-      <canvas
-        ref={canvasRef}
-        style={{ position: 'relative', zIndex: 10, display: 'block', width: '100%', height: '100%', touchAction: 'none' }}
-        onMouseMove={handleMouseMove}
-        onTouchMove={handleTouchMove}
-        onClick={signalReady}
-        onTouchStart={signalReady}
-      />
+
+      {isMobile ? (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 48, overflow: 'hidden' }}>
+          <canvas
+            ref={canvasRef}
+            style={{ display: 'block', touchAction: 'none' }}
+            onMouseMove={handleMouseMove}
+            onTouchMove={handleTouchMove}
+            onClick={signalReady}
+            onTouchStart={signalReady}
+          />
+          <canvas
+            ref={oppCanvasRef}
+            style={{ display: 'block', marginTop: 6 }}
+          />
+        </div>
+      ) : (
+        <canvas
+          ref={canvasRef}
+          style={{ position: 'relative', zIndex: 10, display: 'block', width: '100%', height: '100%', touchAction: 'none' }}
+          onMouseMove={handleMouseMove}
+          onTouchMove={handleTouchMove}
+          onClick={signalReady}
+          onTouchStart={signalReady}
+        />
+      )}
+
       <HomeButton />
 
       {result && (

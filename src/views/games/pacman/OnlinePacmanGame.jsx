@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import HomeButton from '../../../components/shared/HomeButton';
 import RetroGrid from '../../../components/shared/RetroGrid';
 import isMobile from '../../../utils/isMobile';
@@ -61,11 +60,22 @@ function levelConfig(level) {
 function lp(a, b, t) { return a + (b - a) * Math.min(1, Math.max(0, t)); }
 
 function OnlinePacmanGame({ socket, room, opponentName }) {
-  const MP_CELL = isMobile
-    ? Math.floor(Math.min(window.innerWidth * 0.44, 200) / COLS)
-    : 20;
-  const CW = MP_CELL * COLS;
-  const CH = MP_CELL * ROWS;
+  // Opp board: fixed tiny cell size (full board below my board)
+  const OPP_CELL = isMobile ? 4 : 20;
+  const OPP_CH_BOARD = OPP_CELL * ROWS; // 88px
+  const OPP_AREA_H   = 16 + OPP_CH_BOARD + 8; // label + board + gap ≈ 112px
+
+  // My board: full width, fills remaining height
+  const MP_CELL = (() => {
+    if (!isMobile) return 20;
+    const avH = window.innerHeight - 48 - 200 - 20 - 6 - OPP_AREA_H;
+    return Math.max(8, Math.min(Math.floor(avH / ROWS), Math.floor((window.innerWidth - 8) / COLS)));
+  })();
+
+  const CW     = MP_CELL  * COLS;
+  const CH     = MP_CELL  * ROWS;
+  const OPP_CW = OPP_CELL * COLS;  // 84px
+  const OPP_CH = OPP_CELL * ROWS;  // 88px
   const showOppCanvas = true;
 
   const myCanvasRef    = useRef(null);
@@ -290,7 +300,8 @@ function OnlinePacmanGame({ socket, room, opponentName }) {
     const oppCanvas = oppCanvasRef.current;
     const myCtx     = myCanvas.getContext('2d');
     const oppCtx    = oppCanvas ? oppCanvas.getContext('2d') : null;
-    const C = MP_CELL;
+    const C  = MP_CELL;
+    const OC = OPP_CELL;
 
     function wrapX(x) { return ((x % COLS) + COLS) % COLS; }
 
@@ -639,14 +650,14 @@ function OnlinePacmanGame({ socket, room, opponentName }) {
       }
 
       if (oppCtx) {
-        draw(oppCtx, oppStateRef.current, ts, C);
+        draw(oppCtx, oppStateRef.current, ts, OC);
         if (oppStateRef.current?.status === 'dead' && !resultRef.current) {
           oppCtx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-          oppCtx.fillRect(0, 0, C * COLS, C * ROWS);
+          oppCtx.fillRect(0, 0, OC * COLS, OC * ROWS);
           oppCtx.fillStyle = '#ff2d78';
           oppCtx.textAlign = 'center';
-          oppCtx.font = `bold ${isMobile ? 16 : 24}px Orbitron, sans-serif`;
-          oppCtx.fillText('OPPONENT DIED', C * COLS / 2, C * ROWS / 2);
+          oppCtx.font = `bold ${isMobile ? 8 : 24}px Orbitron, sans-serif`;
+          oppCtx.fillText('DIED', OC * COLS / 2, OC * ROWS / 2);
         }
       }
 
@@ -744,40 +755,58 @@ function OnlinePacmanGame({ socket, room, opponentName }) {
         </div>
       )}
 
-      <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: isMobile ? 8 : 20, marginTop: isMobile ? -60 : 0 }}>
-
-        {/* Own game column */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: CW, fontFamily: "'Orbitron',sans-serif", fontSize: 11, color: '#fff', letterSpacing: '0.08em', padding: '0 4px', boxSizing: 'border-box' }}>
+      {isMobile ? (
+        /* ── Mobile: my board full width (top), opp tiny below ── */
+        <div style={{ position: 'fixed', top: 48, left: 0, right: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+          {/* My header */}
+          <div style={{ width: CW, display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: "'Orbitron',sans-serif", fontSize: 11, color: '#fff', letterSpacing: '0.08em', padding: '2px 4px', boxSizing: 'border-box' }}>
             <span style={{ color: '#ffe066', textShadow: '0 0 10px #ffcc00' }}>YOU</span>
             <span>{myUi.score}</span>
             <span style={{ color: '#ff2d78', textShadow: '0 0 8px #ff2d78' }}>{'♥'.repeat(Math.max(0, myUi.lives))}</span>
           </div>
+          {/* My canvas */}
           <div style={{ border: '2px solid rgba(0,180,255,0.4)', borderRadius: 4, boxShadow: '0 0 32px rgba(0,100,255,0.28),inset 0 0 24px rgba(0,0,40,0.85)', overflow: 'hidden' }}>
             <canvas ref={myCanvasRef} width={CW} height={CH} style={{ display: 'block' }} />
           </div>
-
-        </div>
-
-        {/* Opponent column */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: showOppCanvas ? CW : 200, fontFamily: "'Orbitron',sans-serif", fontSize: 11, color: '#fff', letterSpacing: '0.08em', padding: '0 4px', boxSizing: 'border-box' }}>
-            <span style={{ color: '#cc00ff', textShadow: '0 0 10px #cc00ff' }}>{opponentName || 'OPP'}</span>
-            <span>{oppUi.score}</span>
-            <span style={{ color: '#ff2d78', textShadow: '0 0 8px #ff2d78' }}>{'♥'.repeat(Math.max(0, oppUi.lives))}</span>
+          {/* Opp mini: label+stats left, tiny canvas right */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+            <div style={{ fontFamily: "'Orbitron',sans-serif", fontSize: 9, color: '#cc00ff', textShadow: '0 0 6px #cc00ff', letterSpacing: '0.05em', textAlign: 'right', lineHeight: 1.5 }}>
+              <div>{(opponentName || 'OPP').substring(0, 10).toUpperCase()}</div>
+              <div style={{ color: '#fff' }}>SCR {oppUi.score}</div>
+              <div style={{ color: '#ff2d78' }}>{'♥'.repeat(Math.max(0, oppUi.lives))}</div>
+            </div>
+            <div style={{ border: '2px solid rgba(180,0,255,0.35)', borderRadius: 3, boxShadow: '0 0 16px rgba(120,0,255,0.2)', overflow: 'hidden', opacity: 0.9 }}>
+              <canvas ref={oppCanvasRef} width={OPP_CW} height={OPP_CH} style={{ display: 'block' }} />
+            </div>
           </div>
-          {showOppCanvas && (
+        </div>
+      ) : (
+        /* ── Desktop: side by side ── */
+        <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: 20 }}>
+          {/* Own game column */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: CW, fontFamily: "'Orbitron',sans-serif", fontSize: 11, color: '#fff', letterSpacing: '0.08em', padding: '0 4px', boxSizing: 'border-box' }}>
+              <span style={{ color: '#ffe066', textShadow: '0 0 10px #ffcc00' }}>YOU</span>
+              <span>{myUi.score}</span>
+              <span style={{ color: '#ff2d78', textShadow: '0 0 8px #ff2d78' }}>{'♥'.repeat(Math.max(0, myUi.lives))}</span>
+            </div>
+            <div style={{ border: '2px solid rgba(0,180,255,0.4)', borderRadius: 4, boxShadow: '0 0 32px rgba(0,100,255,0.28),inset 0 0 24px rgba(0,0,40,0.85)', overflow: 'hidden' }}>
+              <canvas ref={myCanvasRef} width={CW} height={CH} style={{ display: 'block' }} />
+            </div>
+          </div>
+          {/* Opponent column */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: CW, fontFamily: "'Orbitron',sans-serif", fontSize: 11, color: '#fff', letterSpacing: '0.08em', padding: '0 4px', boxSizing: 'border-box' }}>
+              <span style={{ color: '#cc00ff', textShadow: '0 0 10px #cc00ff' }}>{opponentName || 'OPP'}</span>
+              <span>{oppUi.score}</span>
+              <span style={{ color: '#ff2d78', textShadow: '0 0 8px #ff2d78' }}>{'♥'.repeat(Math.max(0, oppUi.lives))}</span>
+            </div>
             <div style={{ border: '2px solid rgba(180,0,255,0.35)', borderRadius: 4, boxShadow: '0 0 32px rgba(120,0,255,0.18),inset 0 0 24px rgba(0,0,40,0.85)', overflow: 'hidden', opacity: 0.88 }}>
               <canvas ref={oppCanvasRef} width={CW} height={CH} style={{ display: 'block' }} />
             </div>
-          )}
-          {!showOppCanvas && (
-            <div style={{ fontFamily: "'VT323',monospace", fontSize: 14, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4 }}>
-              OPPONENT'S GAME
-            </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {isMobile && !result && (
         <div style={{ position: 'fixed', bottom: 40, left: 0, width: '100%', display: 'flex', justifyContent: 'center', pointerEvents: 'none', zIndex: 1000 }}>
