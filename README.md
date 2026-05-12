@@ -385,8 +385,8 @@ public/
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/LUC4T0N1/Multiplayer-AI-Tic-Tac-Toe
-cd Multiplayer-AI-Tic-Tac-Toe/client
+git clone https://github.com/LUC4T0N1/Retro-Wave-Games-Front-End
+cd Retro-Wave-Games-Front-End
 
 # 2. Install dependencies
 npm install
