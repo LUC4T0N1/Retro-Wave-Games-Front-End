@@ -23,7 +23,7 @@ const PIECES = {
 };
 const PIECE_KEYS = Object.keys(PIECES);
 const SCORE_TABLE = [0, 100, 300, 500, 800];
-const LEVEL_SPEED = [800, 720, 630, 550, 470, 380, 300, 220, 130, 100, 80];
+const LEVEL_SPEED = [800, 720, 640, 560, 490, 420, 360, 300, 260, 230, 200];
 
 function rotate(shape) {
   const N = shape.length;
